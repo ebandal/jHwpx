@@ -27,61 +27,44 @@
  */
 package HwpDoc.paragraph;
 
-import java.util.List;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import HwpDoc.Exception.NotImplementedException;
-import HwpDoc.paragraph.Ctrl_HeadFoot.PageRange;
-
-public class Ctrl_Note extends Ctrl {
-	private static final Logger log = Logger.getLogger(Ctrl_Note.class.getName());
-
+public class Ctrl_Click extends Ctrl {
+	private static final Logger log = Logger.getLogger(Ctrl_Click.class.getName());
 	private int size;
+	public  String clickHereStr;
 	
-	public List<HwpParagraph> paras;
-
-	public Ctrl_Note(String ctrlId, int size, byte[] buf, int off, int version) {
+	public Ctrl_Click(String ctrlId, int size, byte[] buf, int off, int version) {
 		super(ctrlId);
-		
 		int offset = off;
-		// 각주/미주는 문단 리스트 외에 속성을 갖지 않는다. 하지만 쓰레기 값이나 불필요한 업데이트를 줄이기 위해 8 byte를 serialize한다.
-		// 도데체 무슨 말인지??? 8byte를 포함한다는 말인가?
-		offset += 8;
 		
-		log.fine("                                                  " + toString());
-
+		offset += 4;
+		offset += 1;
+		short len 	= (short) ((buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF)*2);
+		offset += 2;
+		
+		if (len > 0) {
+			clickHereStr = new String(buf, offset, len, StandardCharsets.UTF_16LE);
+			offset += len;
+		}
+		
+		offset += 4;
+		offset += 4;
+		
 		this.size = offset-off;
 
+		log.fine("                                                  " + toString());
 	}
 	
-	public Ctrl_Note(String ctrlId, Node node, int version) throws NotImplementedException {
-        super(ctrlId);
-        
-        // id는 처리하지 않는다. List<Ctrl_Note>에 순차적으로 추가한다.
-        // String id = attributes.getNamedItem("id").getNodeValue();
-
-        NodeList nodeList = node.getChildNodes();
-        for (int i=0; i<nodeList.getLength(); i++) {
-            Node child = nodeList.item(i);
-            
-            switch(child.getNodeName()) {
-            case "subList":
-                {
-                    NamedNodeMap childAttrs = child.getAttributes();
-                    throw new NotImplementedException("subList");
-                }
-            }
-        }
-    }
-
-    public String toString() {
-		return "CTRL("+ctrlId+")";
+	public String toString() {
+		StringBuffer strb = new StringBuffer();
+		strb.append("CTRL("+ctrlId+")")
+			.append("=문자열:"+(clickHereStr==null?"":clickHereStr));
+		return strb.toString();
 	}
-	
+
+	@Override
 	public int getSize() {
 		return size;
 	}

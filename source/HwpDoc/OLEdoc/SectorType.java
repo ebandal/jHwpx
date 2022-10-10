@@ -23,17 +23,13 @@
  * 작성자 : 반희수 ebandal@gmail.com  
  * 작성일 : 2022.10
  */
-package HwpDoc.paragraph;
+package HwpDoc.OLEdoc;
 
-import org.w3c.dom.Node;
-
-import HwpDoc.Exception.NotImplementedException;
-
-public class CellParagraph extends HwpParagraph {
-    
-	public CellParagraph() { super(); }
-
-    public CellParagraph(Node node, int version) throws NotImplementedException {
-        super(node, version);
-    }
+public enum SectorType {
+	SAT,
+	MSAT,
+	ENDOFCHAIN,
+	CONTINUE,
+	FREE,
+	MAX
 }

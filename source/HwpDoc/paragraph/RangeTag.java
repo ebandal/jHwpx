@@ -25,15 +25,9 @@
  */
 package HwpDoc.paragraph;
 
-import org.w3c.dom.Node;
+public class RangeTag {
+	public int			startPos;		// 영역 시작
+	public int			endPos;			// 영역 끝
+	public int			tag;			// 태그(종류 + 데이터): 상위8비트가 종류를 하위 24비트가 종류별로 다른 설명을 부여할 수 있는 임의의 데이터를 나타낸다.
 
-import HwpDoc.Exception.NotImplementedException;
-
-public class CellParagraph extends HwpParagraph {
-    
-	public CellParagraph() { super(); }
-
-    public CellParagraph(Node node, int version) throws NotImplementedException {
-        super(node, version);
-    }
 }

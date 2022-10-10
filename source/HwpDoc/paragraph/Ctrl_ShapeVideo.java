@@ -27,12 +27,14 @@
  */
 package HwpDoc.paragraph;
 
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import HwpDoc.Exception.HwpParseException;
 import HwpDoc.Exception.NotImplementedException;
 
 public class Ctrl_ShapeVideo extends Ctrl_GeneralShape {
@@ -80,6 +82,41 @@ public class Ctrl_ShapeVideo extends Ctrl_GeneralShape {
         }
     }
 
+	public static int parseElement(Ctrl_ShapeVideo obj, int size, byte[] buf, int off, int version) throws HwpParseException, NotImplementedException {
+        int offset = off;
+        
+        obj.videoType   = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        if (obj.videoType==0) {
+            obj.vidoeBinID  = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
+            offset += 2;
+        } else if (obj.videoType==1) {
+            int urlLen      = (short) ((buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF)*2);
+            offset += 2;
+            obj.objDesc = new String(buf, offset, urlLen, StandardCharsets.UTF_16LE);
+            offset += urlLen;
+        }
+        obj.thumnailBinID   = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
+        offset += 2;
+        
+        if (offset-off-size!=0) {
+            log.fine("[CtrlId]=" + obj.ctrlId + ", size=" + size + ", but currentSize=" + (offset-off));
+            // size 계산 무시
+            // throw new HwpParseException();
+        }
+        
+        return offset-off;
+    }
+    
+    public static int parseCtrl(Ctrl_ShapeVideo shape, int size, byte[] buf, int off, int version) throws HwpParseException {
+        int offset = off;
+        int len = Ctrl_ObjElement.parseCtrl(shape, size, buf, offset, version);
+        offset += len;
+        
+        return offset-off;
+    }
+
+    
     public String toString() {
 		StringBuffer strb = new StringBuffer();
 		strb.append("CTRL("+ctrlId+")")

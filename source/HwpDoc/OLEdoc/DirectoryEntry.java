@@ -23,17 +23,48 @@
  * 작성자 : 반희수 ebandal@gmail.com  
  * 작성일 : 2022.10
  */
-package HwpDoc.paragraph;
+package HwpDoc.OLEdoc;
 
-import org.w3c.dom.Node;
+import java.util.List;
 
-import HwpDoc.Exception.NotImplementedException;
+public class DirectoryEntry {
+	String directoryEntryName;
+	int objectType;
+	int colorFlag;
+	int leftSiblingID;
+	int rightSiblingID;
+	int childID;
+	long clsID1;
+	long clsID2;
+	int stateBit;
+	long creationTime;
+	long modifiedTime;
+	int startingSectorID;
+	long streamSize;
+	List<Integer> secNums;
+	
+	public DirectoryEntry(String directoryEntryName, int objectType, int colorFlag, int leftSiblingID, int rightSiblingID, int childID, 
+							long clsID1, long clsID2, int stateBit, long creationTime, long modifiedTime, int startingSectorID, long streamSize) { 
+		this.directoryEntryName = directoryEntryName;
+		this.objectType = objectType;
+		this.colorFlag = colorFlag;
+		this.leftSiblingID = leftSiblingID;
+		this.rightSiblingID = rightSiblingID;
+		this.childID = childID;
+		this.clsID1 = clsID1;
+		this.clsID2 = clsID2;
+		this.stateBit = stateBit;
+		this.creationTime = creationTime;
+		this.modifiedTime = modifiedTime;
+		this.startingSectorID = startingSectorID;
+		this.streamSize = streamSize;
+	}
 
-public class CellParagraph extends HwpParagraph {
-    
-	public CellParagraph() { super(); }
+	public int getObjectType() {
+		return objectType;
+	}
 
-    public CellParagraph(Node node, int version) throws NotImplementedException {
-        super(node, version);
-    }
+	public String getDirectoryEntryName() {
+		return directoryEntryName;
+	}
 }

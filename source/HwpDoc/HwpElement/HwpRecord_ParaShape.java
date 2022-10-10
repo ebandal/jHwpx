@@ -476,7 +476,7 @@ public class HwpRecord_ParaShape extends HwpRecord {
                 if (type.num == num)
                     return type;
             }
-            return null;
+            return JUSTIFY;
         }
     }
     
@@ -497,7 +497,7 @@ public class HwpRecord_ParaShape extends HwpRecord {
                 if (type.num == num)
                     return type;
             }
-            return null;
+            return BASELINE;
         }
     }
     

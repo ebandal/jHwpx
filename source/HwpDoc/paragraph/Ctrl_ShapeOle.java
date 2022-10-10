@@ -33,12 +33,8 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import HwpDoc.Exception.HwpParseException;
 import HwpDoc.Exception.NotImplementedException;
-import HwpDoc.HwpElement.HwpRecord_ShapePicture.Neon;
-import HwpDoc.HwpElement.HwpRecord_ShapePicture.PicEffectType;
-import HwpDoc.HwpElement.HwpRecord_ShapePicture.Reflect;
-import HwpDoc.HwpElement.HwpRecord_ShapePicture.Shadow;
-import HwpDoc.HwpElement.HwpRecord_ShapePicture.SoftEdge;
 
 public class Ctrl_ShapeOle extends Ctrl_GeneralShape {
 	private static final Logger log = Logger.getLogger(Ctrl_ShapeOle.class.getName());
@@ -119,6 +115,41 @@ public class Ctrl_ShapeOle extends Ctrl_GeneralShape {
                 }
             }
         }
+    }
+
+	public static int parseElement(Ctrl_ShapeOle obj, int size, byte[] buf, int off, int version) throws HwpParseException, NotImplementedException {
+        int offset = off;
+        
+        obj.attr        = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.extentX     = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.extentY     = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.binDataID   = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
+        offset += 2;
+        obj.borderColor = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.borderThick = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.borderAttr  = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        // 8 bytes가 남지만,  OLE 미지원으로 할 것으므로 무시한다. 
+        if (offset-off-size!=0) {
+            log.fine("[CtrlId]=" + obj.ctrlId + ", size=" + size + ", but currentSize=" + (offset-off));
+            // size 계산 무시
+            // throw new HwpParseException();
+        }
+        
+        return offset-off;
+    }
+    
+    public static int parseCtrl(Ctrl_ShapeOle shape, int size, byte[] buf, int off, int version) throws HwpParseException {
+        int offset = off;
+        int len = Ctrl_ObjElement.parseCtrl(shape, size, buf, offset, version);
+        offset += len;
+        
+        return offset-off;
     }
 
     public String toString() {

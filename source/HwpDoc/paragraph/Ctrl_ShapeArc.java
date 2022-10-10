@@ -33,6 +33,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import HwpDoc.Exception.HwpParseException;
 import HwpDoc.Exception.NotImplementedException;
 import HwpDoc.paragraph.Ctrl_ShapeEllipse.ArcType;
 
@@ -100,6 +101,44 @@ public class Ctrl_ShapeArc extends Ctrl_GeneralShape {
 
     }
 
+	public static int parseElement(Ctrl_ShapeArc obj, int size, byte[] buf, int off, int version) throws HwpParseException, NotImplementedException {
+        int offset = off;
+        
+        obj.type    = ArcType.from(buf[offset++]);
+        obj.centerX = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.centerY = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.axixX1  = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.axixY1  = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.axixX2  = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.axixY2  = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+    
+        log.fine("                                                  "
+                +"Center(X,Y)=("+obj.centerX+","+obj.centerY+")"
+                +",Point1(X,Y)=("+obj.axixX1+","+obj.axixY1+")"
+                +",Point2(X,Y)=("+obj.axixX2+","+obj.axixY2+")"
+                );
+    
+        if (offset-off-size!=0) {
+            log.fine("[CtrlId]=" + obj.ctrlId + ", size=" + size + ", but currentSize=" + (offset-off));
+            throw new HwpParseException();
+        }
+        
+        return offset-off;
+    }
+
+    public static int parseCtrl(Ctrl_ShapeArc shape, int size, byte[] buf, int off, int version) throws HwpParseException, NotImplementedException {
+        int offset = off;
+        offset += Ctrl_GeneralShape.parseCtrl(shape, size, buf, off, version);
+        
+        return offset-off;
+    }
+    
     public String toString() {
 		StringBuffer strb = new StringBuffer();
 		strb.append("CTRL("+ctrlId+")")

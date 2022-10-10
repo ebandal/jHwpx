@@ -45,34 +45,17 @@ import HwpDoc.HwpElement.HwpRecord;
 import HwpDoc.HwpElement.HwpRecord_CtrlData;
 import HwpDoc.HwpElement.HwpRecord_CtrlHeader;
 import HwpDoc.HwpElement.HwpRecord_DocumentProperties;
-import HwpDoc.HwpElement.HwpRecord_EqEdit;
-import HwpDoc.HwpElement.HwpRecord_FootnoteShape;
 import HwpDoc.HwpElement.HwpRecord_FormObject;
 import HwpDoc.HwpElement.HwpRecord_ListHeader;
-import HwpDoc.HwpElement.HwpRecord_PageBorderFill;
-import HwpDoc.HwpElement.HwpRecord_PageDef;
-import HwpDoc.HwpElement.HwpRecord_ParaCharShape;
-import HwpDoc.HwpElement.HwpRecord_ParaHeader;
-import HwpDoc.HwpElement.HwpRecord_ParaLineSeg;
 import HwpDoc.HwpElement.HwpRecord_ParaRangeTag;
 import HwpDoc.HwpElement.HwpRecord_ParaText;
-import HwpDoc.HwpElement.HwpRecord_ShapeArc;
-import HwpDoc.HwpElement.HwpRecord_ShapeComponent;
-import HwpDoc.HwpElement.HwpRecord_ShapeCurve;
-import HwpDoc.HwpElement.HwpRecord_ShapeEllipse;
-import HwpDoc.HwpElement.HwpRecord_ShapeLine;
-import HwpDoc.HwpElement.HwpRecord_ShapeOle;
-import HwpDoc.HwpElement.HwpRecord_ShapePicture;
-import HwpDoc.HwpElement.HwpRecord_ShapePolygon;
-import HwpDoc.HwpElement.HwpRecord_ShapeRect;
-import HwpDoc.HwpElement.HwpRecord_ShapeTextArt;
-import HwpDoc.HwpElement.HwpRecord_ShapeVideo;
-import HwpDoc.HwpElement.HwpRecord_Table;
 import HwpDoc.HwpElement.HwpTag;
 import HwpDoc.paragraph.CapParagraph;
 import HwpDoc.paragraph.CellParagraph;
+import HwpDoc.paragraph.CharShape;
 import HwpDoc.paragraph.Ctrl;
 import HwpDoc.paragraph.Ctrl_Common;
+import HwpDoc.paragraph.Ctrl_Common.VertAlign;
 import HwpDoc.paragraph.Ctrl_Container;
 import HwpDoc.paragraph.Ctrl_EqEdit;
 import HwpDoc.paragraph.Ctrl_Form;
@@ -92,8 +75,10 @@ import HwpDoc.paragraph.Ctrl_ShapeTextArt;
 import HwpDoc.paragraph.Ctrl_ShapeVideo;
 import HwpDoc.paragraph.Ctrl_Table;
 import HwpDoc.paragraph.HwpParagraph;
+import HwpDoc.paragraph.LineSeg;
 import HwpDoc.paragraph.TblCell;
 import HwpDoc.section.NoteShape;
+import HwpDoc.section.Page;
 import HwpDoc.section.PageBorderFill;
 
 public class HwpxSection {
@@ -122,7 +107,6 @@ public class HwpxSection {
                 paraList.add(para);
                 break;
             }
-            
         }
         return true;
 	}
@@ -219,7 +203,7 @@ public class HwpxSection {
 					if (currPara instanceof CellParagraph) {
 						return offset-headerOffset-off;  // CELL에 여러개의 PARA가 들어가기 위해 필요.
 					} else if (currPara instanceof CapParagraph) {
-						offset += HwpRecord_ParaHeader.parse(currPara, size, buf, offset, version);	// 캡션을 읽기 위해 필요.
+						offset += HwpParagraph.parse(currPara, size, buf, offset, version);	// 캡션을 읽기 위해 필요.
 						break;
 					} else {
 						if (runLevel==1) {	// runLevel=1에서 HWPTAG_PARA_HEADER 예상하지 못함. PARA_HEADER 뒤에 PARA_HEADER 인 경우,
@@ -232,11 +216,11 @@ public class HwpxSection {
 					offset += size;
 					break;
 				case HWPTAG_PARA_CHAR_SHAPE:
-					currPara.charShapes = HwpRecord_ParaCharShape.parse(tagNum, level, size, buf, offset, version);
+					currPara.charShapes = CharShape.parse(tagNum, level, size, buf, offset, version);
 					offset += size;
 					break;
 				case HWPTAG_PARA_LINE_SEG:
-					currPara.lineSegs = HwpRecord_ParaLineSeg.parse(tagNum, level, size, buf, offset, version);
+					currPara.lineSegs = LineSeg.parse(tagNum, level, size, buf, offset, version);
 					offset += size;
 					break;
 				case HWPTAG_PARA_RANGE_TAG:
@@ -468,7 +452,7 @@ public class HwpxSection {
 					if (ctrl instanceof Ctrl_Table) {
 						if (((Ctrl_Table)ctrl).cells==null) {	// 캡션.
 							if (((Ctrl_Table)ctrl).paras==null) ((Ctrl_Table)ctrl).paras = new ArrayList<HwpParagraph>();
-							HwpParagraph newPara = HwpRecord_ParaHeader.parse(tagNum, level, size, buf, offset, version);  // 누가 미리 만들은게냐? 313라인에서 만들었네.
+							HwpParagraph newPara = HwpParagraph.parse(tagNum, level, size, buf, offset, version);  // 누가 미리 만들은게냐? 313라인에서 만들었네.
 							// HwpParagraph newPara = new HwpParagraph();
 							((Ctrl_Table)ctrl).paras.add(newPara);
 							offset += size;		// HWP_PARA_HEADER의 하위 level부터 읽도록  offset 변경.
@@ -480,15 +464,15 @@ public class HwpxSection {
 							CellParagraph newPara = new CellParagraph();
 							cell.paras.add(newPara);
 							// Cell 내용에 대한  PARA_HEADER 읽어야지요.
-							offset += HwpRecord_ParaHeader.parse(newPara, size, buf, offset, version);
+							offset += HwpParagraph.parse(newPara, size, buf, offset, version);
 							// HWP_PARA_HEADER의 하위 level부터 읽도록  offset 변경되었음.
 							offset += parseRecurse(newPara, level, buf, offset, version);
 						}
 					} else if (ctrl instanceof Ctrl_ShapeRect) {
 						if (((Ctrl_Common)ctrl).paras==null) 	((Ctrl_Common)ctrl).paras = new ArrayList<HwpParagraph>();
-						HwpParagraph newPara = HwpRecord_ParaHeader.parse(tagNum, level, size, buf, offset, version);
+						HwpParagraph newPara = HwpParagraph.parse(tagNum, level, size, buf, offset, version);
 						((Ctrl_Common) ctrl).paras.add(newPara);
-						offset += HwpRecord_ParaHeader.parse(newPara, size, buf, offset, version);
+						offset += HwpParagraph.parse(newPara, size, buf, offset, version);
 						// parseRecurse에서 PARA_TEXT 부터 읽도록 offset 변경되었음.
 						offset += parseRecurse(newPara, level, buf, offset, version);
                     } else if (ctrl instanceof Ctrl_GeneralShape) {
@@ -496,37 +480,37 @@ public class HwpxSection {
                             ((Ctrl_Common)ctrl).caption = new ArrayList<CapParagraph>();
                             CapParagraph newPara = new CapParagraph(); //HwpRecord_ParaHeader.parse(tagNum, level, size, buf, offset, version);
                             ((Ctrl_Common) ctrl).caption.add(newPara);
-                            offset += HwpRecord_ParaHeader.parse(newPara, size, buf, offset, version);
+                            offset += HwpParagraph.parse(newPara, size, buf, offset, version);
                             // parseRecurse에서 PARA_TEXT 부터 읽도록 offset 변경되었음.
                             offset += parseRecurse(newPara, level, buf, offset, version);
                         } else {
                             if (((Ctrl_Common)ctrl).paras==null)    ((Ctrl_Common)ctrl).paras = new ArrayList<HwpParagraph>();
-                            HwpParagraph newPara = HwpRecord_ParaHeader.parse(tagNum, level, size, buf, offset, version);
+                            HwpParagraph newPara = HwpParagraph.parse(tagNum, level, size, buf, offset, version);
                             ((Ctrl_Common) ctrl).paras.add(newPara);
-                            offset += HwpRecord_ParaHeader.parse(newPara, size, buf, offset, version);
+                            offset += HwpParagraph.parse(newPara, size, buf, offset, version);
                             // parseRecurse에서 PARA_TEXT 부터 읽도록 offset 변경되었음.
                             offset += parseRecurse(newPara, level, buf, offset, version);
                         }
 					} else if (ctrl instanceof Ctrl_HeadFoot) {
                         if (((Ctrl_HeadFoot)ctrl).paras==null)    ((Ctrl_HeadFoot)ctrl).paras = new ArrayList<HwpParagraph>();
-						HwpParagraph newPara = HwpRecord_ParaHeader.parse(tagNum, level, size, buf, offset, version);
+						HwpParagraph newPara = HwpParagraph.parse(tagNum, level, size, buf, offset, version);
 						((Ctrl_HeadFoot)ctrl).paras.add(newPara);
 						offset += size;		// parseRecurse에서 PARA_TEXT 부터 읽도록 offset 변경.
 						offset += parseRecurse(newPara, level, buf, offset, version);
 					} else if (ctrl instanceof Ctrl_SectionDef) {						// 바탕쪽 (Header/Footer와 유사)
 						if (((Ctrl_SectionDef)ctrl).paras==null) 	((Ctrl_SectionDef)ctrl).paras = new ArrayList<HwpParagraph>();
-						HwpParagraph newPara = HwpRecord_ParaHeader.parse(tagNum, level, size, buf, offset, version);
+						HwpParagraph newPara = HwpParagraph.parse(tagNum, level, size, buf, offset, version);
 						((Ctrl_SectionDef) ctrl).paras.add(newPara);
 						offset += size;
 						offset += parseRecurse(newPara, level, buf, offset, version);
 					} else if (ctrl instanceof Ctrl_Note) {
 						if (((Ctrl_Note)ctrl).paras==null) 	((Ctrl_Note)ctrl).paras = new ArrayList<HwpParagraph>();
-						HwpParagraph newPara = HwpRecord_ParaHeader.parse(tagNum, level, size, buf, offset, version);
+						HwpParagraph newPara = HwpParagraph.parse(tagNum, level, size, buf, offset, version);
 						((Ctrl_Note) ctrl).paras.add(newPara);
 						offset += size;
 						offset += parseRecurse(newPara, level, buf, offset, version);
 					} else {
-						HwpParagraph newPara = HwpRecord_ParaHeader.parse(tagNum, level, size, buf, offset, version);
+						HwpParagraph newPara = HwpParagraph.parse(tagNum, level, size, buf, offset, version);
 						offset += size;
 						parseRecurse(newPara, level, buf, offset, version);
 					}
@@ -535,7 +519,7 @@ public class HwpxSection {
 					return offset-headerOffset-off;
 				case HWPTAG_PAGE_DEF:
 					if (ctrl instanceof Ctrl_SectionDef) {
-						((Ctrl_SectionDef)ctrl).page = HwpRecord_PageDef.parse(level, size, buf, offset, version);
+						((Ctrl_SectionDef)ctrl).page = Page.parse(level, size, buf, offset, version);
 					}
 					offset += size;
 					break;
@@ -543,7 +527,7 @@ public class HwpxSection {
 					if (ctrl instanceof Ctrl_SectionDef) {
 						Ctrl_SectionDef secCtrl = (Ctrl_SectionDef)ctrl;
 						if (secCtrl.noteShapes==null)  secCtrl.noteShapes = new ArrayList<NoteShape>();
-						secCtrl.noteShapes.add(HwpRecord_FootnoteShape.parse(level, size, buf, offset, version));
+						secCtrl.noteShapes.add(NoteShape.parse(level, size, buf, offset, version));
 					}
 					offset += size;
 					break;
@@ -551,20 +535,20 @@ public class HwpxSection {
 					if (ctrl instanceof Ctrl_SectionDef) {
 						Ctrl_SectionDef secCtrl = (Ctrl_SectionDef)ctrl;
 						if (secCtrl.borderFills==null)  secCtrl.borderFills = new ArrayList<PageBorderFill>();
-						secCtrl.borderFills.add(HwpRecord_PageBorderFill.parse(level, size, buf, offset, version));
+						secCtrl.borderFills.add(PageBorderFill.parse(level, size, buf, offset, version));
 					}
 					offset += size;
 					break;
 				case HWPTAG_TABLE:
 					{
 						// 이후에오는 {LIST_HEADER+...} 들을  cell로 받아야 한다.
-						int len = HwpRecord_Table.parseCtrl((Ctrl_Table)ctrl, size, buf, offset, version);
+						int len = Ctrl_Table.parseCtrl((Ctrl_Table)ctrl, size, buf, offset, version);
 					}
 					offset += size;
 					break;
 				case HWPTAG_LIST_HEADER:
 					if (ctrl instanceof Ctrl_Table) {
-						byte verAlign = HwpRecord_ListHeader.getVertAlign(size, buf, offset, version);
+						VertAlign verAlign = HwpRecord_ListHeader.getVertAlign(size, buf, offset, version);
 						offset += 6;	// 문단수 2byte, 속성 4byte
 						if (((Ctrl_Table)ctrl).cells==null)	((Ctrl_Table)ctrl).cells = new ArrayList<TblCell>();
 						// LIST_HEADER에 붙어서 오는  41byte 먼저 읽고,
@@ -587,7 +571,7 @@ public class HwpxSection {
 						if (((Ctrl_Container) ctrl).list==null) ((Ctrl_Container) ctrl).list = new ArrayList<Ctrl_GeneralShape>();
 						offset += parseContainerRecurse((Ctrl_Container)ctrl, level, buf, offset, version);
 					} else if (ctrl instanceof Ctrl_GeneralShape) {
-						Ctrl_GeneralShape newCtrl = HwpRecord_ShapeComponent.parse((Ctrl_GeneralShape)ctrl, size, buf, offset, version);
+						Ctrl_GeneralShape newCtrl = Ctrl_GeneralShape.parse((Ctrl_GeneralShape)ctrl, size, buf, offset, version);
 						// replace Ctrl with newCtrl
 						HwpParagraph parentPara = ((Ctrl_GeneralShape)ctrl).getParent();
 						int ctrlIndex = parentPara.ctrls.indexOf(ctrl);
@@ -598,67 +582,67 @@ public class HwpxSection {
 					break;
 				case HWPTAG_SHAPE_COMPONENT_PICTURE:
 					if (ctrl instanceof Ctrl_ShapePic) {
-						HwpRecord_ShapePicture.parseElement((Ctrl_ShapePic)ctrl, size, buf, offset, version);
+						Ctrl_ShapePic.parseElement((Ctrl_ShapePic)ctrl, size, buf, offset, version);
 					}
 					offset += size;
 					break;
 				case HWPTAG_SHAPE_COMPONENT_LINE:
 					if (ctrl instanceof Ctrl_ShapeLine) {
-						HwpRecord_ShapeLine.parseElement((Ctrl_ShapeLine)ctrl, size, buf, offset, version);
+						Ctrl_ShapeLine.parseElement((Ctrl_ShapeLine)ctrl, size, buf, offset, version);
 					}
 					offset += size;
 					break;
 				case HWPTAG_SHAPE_COMPONENT_RECTANGLE:
 					if (ctrl instanceof Ctrl_ShapeRect) {
-						HwpRecord_ShapeRect.parseElement((Ctrl_ShapeRect)ctrl, size, buf, offset, version);
+						Ctrl_ShapeRect.parseElement((Ctrl_ShapeRect)ctrl, size, buf, offset, version);
 					}
 					offset += size;
 					break;
 				case HWPTAG_SHAPE_COMPONENT_ELLIPSE:
 					if (ctrl instanceof Ctrl_ShapeEllipse) {
-						HwpRecord_ShapeEllipse.parseElement((Ctrl_ShapeEllipse)ctrl, size, buf, offset, version);
+						Ctrl_ShapeEllipse.parseElement((Ctrl_ShapeEllipse)ctrl, size, buf, offset, version);
 					}
 					offset += size;
 					break;
 				case HWPTAG_SHAPE_COMPONENT_ARC:
 					if (ctrl instanceof Ctrl_ShapeArc) {
-						HwpRecord_ShapeArc.parseElement((Ctrl_ShapeArc)ctrl, size, buf, offset, version);
+						Ctrl_ShapeArc.parseElement((Ctrl_ShapeArc)ctrl, size, buf, offset, version);
 					}
 					offset += size;
 					break;
 				case HWPTAG_SHAPE_COMPONENT_POLYGON:
 					if (ctrl instanceof Ctrl_ShapePolygon) {
-						HwpRecord_ShapePolygon.parseElement((Ctrl_ShapePolygon)ctrl, size, buf, offset, version);
+						Ctrl_ShapePolygon.parseElement((Ctrl_ShapePolygon)ctrl, size, buf, offset, version);
 					}
 					offset += size;
 					break;
 				case HWPTAG_SHAPE_COMPONENT_CURVE:
 					if (ctrl instanceof Ctrl_ShapeCurve) {
-						HwpRecord_ShapeCurve.parseElement((Ctrl_ShapeCurve)ctrl, size, buf, offset, version);
+						Ctrl_ShapeCurve.parseElement((Ctrl_ShapeCurve)ctrl, size, buf, offset, version);
 					}
 					offset += size;
 					break;
 				case HWPTAG_SHAPE_COMPONENT_OLE:
 					if (ctrl instanceof Ctrl_ShapeOle) {
-						HwpRecord_ShapeOle.parseElement((Ctrl_ShapeOle)ctrl, size, buf, offset, version);
+						Ctrl_ShapeOle.parseElement((Ctrl_ShapeOle)ctrl, size, buf, offset, version);
 					}
 					offset += size;
 					break;
 				case HWPTAG_EQEDIT:
 					if (ctrl instanceof Ctrl_EqEdit) {
-						HwpRecord_EqEdit.parseElement((Ctrl_EqEdit)ctrl, size, buf, offset, version);
+						Ctrl_EqEdit.parseElement((Ctrl_EqEdit)ctrl, size, buf, offset, version);
 					}
 					offset += size;
 					break;
 				case HWPTAG_VIDEO_DATA:
 					if (ctrl instanceof Ctrl_ShapeVideo) {
-						HwpRecord_ShapeVideo.parseElement((Ctrl_ShapeVideo)ctrl, size, buf, offset, version);
+						Ctrl_ShapeVideo.parseElement((Ctrl_ShapeVideo)ctrl, size, buf, offset, version);
 					}
 					offset += size;
 					break;
 				case HWPTAG_SHAPE_COMPONENT_TEXTART:
 					if (ctrl instanceof Ctrl_ShapeTextArt) {
-						HwpRecord_ShapeTextArt.parseElement((Ctrl_ShapeTextArt)ctrl, size, buf, offset, version);
+						Ctrl_ShapeTextArt.parseElement((Ctrl_ShapeTextArt)ctrl, size, buf, offset, version);
 					}
 					offset += size;
 					break;
@@ -723,7 +707,7 @@ public class HwpxSection {
 							ctrl = new Ctrl_ShapePic(new Ctrl_GeneralShape());
 							container.list.add(ctrl);
 						}
-						offset += HwpRecord_ShapePicture.parseElement((Ctrl_ShapePic)ctrl, size, buf, offset, version);
+						offset += Ctrl_ShapePic.parseElement((Ctrl_ShapePic)ctrl, size, buf, offset, version);
 					}
 					break;
 				case HWPTAG_SHAPE_COMPONENT_LINE:
@@ -739,7 +723,7 @@ public class HwpxSection {
 							ctrl = new Ctrl_ShapeLine(new Ctrl_GeneralShape());
 							container.list.add(ctrl);
 						}
-						offset += HwpRecord_ShapeLine.parseElement((Ctrl_ShapeLine)ctrl, size, buf, offset, version);
+						offset += Ctrl_ShapeLine.parseElement((Ctrl_ShapeLine)ctrl, size, buf, offset, version);
 					}
 					break;
 				case HWPTAG_SHAPE_COMPONENT_RECTANGLE:
@@ -755,7 +739,7 @@ public class HwpxSection {
 							ctrl = new Ctrl_ShapeRect(new Ctrl_GeneralShape());
 							container.list.add(ctrl);
 						}
-						offset += HwpRecord_ShapeRect.parseElement((Ctrl_ShapeRect)ctrl, size, buf, offset, version);
+						offset += Ctrl_ShapeRect.parseElement((Ctrl_ShapeRect)ctrl, size, buf, offset, version);
 					}
 					break;
 				case HWPTAG_SHAPE_COMPONENT_ELLIPSE:
@@ -771,7 +755,7 @@ public class HwpxSection {
 							ctrl = new Ctrl_ShapeEllipse(new Ctrl_GeneralShape());
 							container.list.add(ctrl);
 						}
-						offset += HwpRecord_ShapeEllipse.parseElement((Ctrl_ShapeEllipse)ctrl, size, buf, offset, version);
+						offset += Ctrl_ShapeEllipse.parseElement((Ctrl_ShapeEllipse)ctrl, size, buf, offset, version);
 					}
 					break;
 				case HWPTAG_SHAPE_COMPONENT_ARC:
@@ -787,7 +771,7 @@ public class HwpxSection {
 							ctrl = new Ctrl_ShapeArc(new Ctrl_GeneralShape());
 							container.list.add(ctrl);
 						}
-						offset += HwpRecord_ShapeArc.parseElement((Ctrl_ShapeArc)ctrl, size, buf, offset, version);
+						offset += Ctrl_ShapeArc.parseElement((Ctrl_ShapeArc)ctrl, size, buf, offset, version);
 					}
 					break;
 				case HWPTAG_SHAPE_COMPONENT_POLYGON:
@@ -803,7 +787,7 @@ public class HwpxSection {
 							ctrl = new Ctrl_ShapePolygon(new Ctrl_GeneralShape());
 							container.list.add(ctrl);
 						}
-						offset += HwpRecord_ShapePolygon.parseElement((Ctrl_ShapePolygon)ctrl, size, buf, offset, version);
+						offset += Ctrl_ShapePolygon.parseElement((Ctrl_ShapePolygon)ctrl, size, buf, offset, version);
 					}
 					break;
 				case HWPTAG_SHAPE_COMPONENT_CURVE:
@@ -819,7 +803,7 @@ public class HwpxSection {
 							ctrl = new Ctrl_ShapeCurve(new Ctrl_GeneralShape());
 							container.list.add(ctrl);
 						}
-						offset += HwpRecord_ShapeCurve.parseElement((Ctrl_ShapeCurve)ctrl, size, buf, offset, version);
+						offset += Ctrl_ShapeCurve.parseElement((Ctrl_ShapeCurve)ctrl, size, buf, offset, version);
 					}
 					break;
 				case HWPTAG_SHAPE_COMPONENT_OLE:
@@ -835,7 +819,7 @@ public class HwpxSection {
 							ctrl = new Ctrl_ShapeOle(new Ctrl_GeneralShape());
 							container.list.add(ctrl);
 						}
-						offset += HwpRecord_ShapeOle.parseElement((Ctrl_ShapeOle)ctrl, size, buf, offset, version);
+						offset += Ctrl_ShapeOle.parseElement((Ctrl_ShapeOle)ctrl, size, buf, offset, version);
 					}
 					break;
 				case HWPTAG_EQEDIT:
@@ -851,7 +835,7 @@ public class HwpxSection {
 							ctrl = new Ctrl_EqEdit(new Ctrl_GeneralShape());
 							container.list.add(ctrl);
 						}
-						offset += HwpRecord_EqEdit.parseElement((Ctrl_EqEdit)ctrl, size, buf, offset, version);
+						offset += Ctrl_EqEdit.parseElement((Ctrl_EqEdit)ctrl, size, buf, offset, version);
 					}
 					break;
 				case HWPTAG_SHAPE_COMPONENT_TEXTART:
@@ -867,7 +851,7 @@ public class HwpxSection {
 							ctrl = new Ctrl_ShapeTextArt(new Ctrl_GeneralShape());
 							container.list.add(ctrl);
 						}
-						offset += HwpRecord_ShapeTextArt.parseElement((Ctrl_ShapeTextArt)ctrl, size, buf, offset, version);
+						offset += Ctrl_ShapeTextArt.parseElement((Ctrl_ShapeTextArt)ctrl, size, buf, offset, version);
 					}
 					break;
 				case HWPTAG_LIST_HEADER:
@@ -900,7 +884,7 @@ public class HwpxSection {
 					break;
 				case HWPTAG_SHAPE_COMPONENT:
                     Ctrl_GeneralShape baseCtrl = new Ctrl_GeneralShape();
-                    Ctrl_GeneralShape newCtrl = HwpRecord_ShapeComponent.parse(baseCtrl, size, buf, offset, version);
+                    Ctrl_GeneralShape newCtrl = Ctrl_GeneralShape.parse(baseCtrl, size, buf, offset, version);
                     offset += size;
                     if (newCtrl instanceof Ctrl_GeneralShape) {
                         container.list.add((Ctrl_GeneralShape)newCtrl);
@@ -948,7 +932,7 @@ public class HwpxSection {
 					
 				case HWPTAG_SHAPE_COMPONENT:
 					Ctrl_GeneralShape baseCtrl = new Ctrl_GeneralShape();
-					Ctrl_GeneralShape newCtrl = HwpRecord_ShapeComponent.parse(baseCtrl, size, buf, offset, version);
+					Ctrl_GeneralShape newCtrl = Ctrl_GeneralShape.parse(baseCtrl, size, buf, offset, version);
 					offset += size;
 					if (newCtrl instanceof Ctrl_GeneralShape) {
 						container.list.add((Ctrl_GeneralShape)newCtrl);
@@ -981,22 +965,22 @@ public class HwpxSection {
 		
 		switch(obj.ctrlId) {
 		case "cer$":
-			len = HwpRecord_ShapeRect.parseListHeaderAppend((Ctrl_ShapeRect)obj, size, buf, off, version);
+			len = Ctrl_ShapeRect.parseListHeaderAppend((Ctrl_ShapeRect)obj, size, buf, off, version);
 			break;
 		case " osg":
-			len = HwpRecord_ShapeComponent.parseListHeaderAppend((Ctrl_GeneralShape)obj, size, buf, off, version);
+			len = Ctrl_GeneralShape.parseListHeaderAppend((Ctrl_GeneralShape)obj, size, buf, off, version);
 			break;
 		case " lbt":
-			len = HwpRecord_Table.parseListHeaderAppend((Ctrl_Table)obj, size, buf, off, version);
+			len = Ctrl_Table.parseListHeaderAppend((Ctrl_Table)obj, size, buf, off, version);
 			break;
 		case "deqe":
-			len = HwpRecord_EqEdit.parseListHeaderAppend((Ctrl_EqEdit)obj, size, buf, off, version);
+			len = Ctrl_EqEdit.parseListHeaderAppend((Ctrl_EqEdit)obj, size, buf, off, version);
 			break;
 		case "lop$":
-			len = HwpRecord_ShapePolygon.parseListHeaderAppend((Ctrl_ShapePolygon)obj, size, buf, off, version);
+			len = Ctrl_ShapePolygon.parseListHeaderAppend((Ctrl_ShapePolygon)obj, size, buf, off, version);
 			break;
 		case "lle$":
-			len = HwpRecord_ShapeEllipse.parseListHeaderAppend((Ctrl_ShapeEllipse)obj, size, buf, off, version);
+			len = Ctrl_ShapeEllipse.parseListHeaderAppend((Ctrl_ShapeEllipse)obj, size, buf, off, version);
 			break;
 		default:
 			throw new NotImplementedException(obj.ctrlId);

@@ -449,7 +449,7 @@ public class HwpRecord_CharShape extends HwpRecord {
 	    		if (langNum.num == num)
 	    			return langNum;
 	    	}
-	    	return null;
+	    	return HANGUL;
 	    }
 	}
 
@@ -468,7 +468,7 @@ public class HwpRecord_CharShape extends HwpRecord {
 	    		if (underline.num == num)
 	    			return underline;
 	    	}
-	    	return null;
+	    	return NONE;
 	    }
 	}
 
@@ -490,7 +490,7 @@ public class HwpRecord_CharShape extends HwpRecord {
 	    		if (outline.num == num)
 	    			return outline;
 	    	}
-	    	return null;
+	    	return NONE;
 	    }
 	}
 	
@@ -508,7 +508,7 @@ public class HwpRecord_CharShape extends HwpRecord {
 	    		if (shadow.num == num)
 	    			return shadow;
 	    	}
-	    	return null;
+	    	return NONE;
 	    }
 	}
 
@@ -530,7 +530,7 @@ public class HwpRecord_CharShape extends HwpRecord {
 	    		if (accent.num == num)
 	    			return accent;
 	    	}
-	    	return null;
+	    	return NONE;
 	    }
 	}
 	

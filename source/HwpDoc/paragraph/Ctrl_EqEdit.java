@@ -27,18 +27,15 @@
  */
 package HwpDoc.paragraph;
 
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import HwpDoc.Exception.HwpParseException;
 import HwpDoc.Exception.NotImplementedException;
-import HwpDoc.HwpElement.HwpRecord_ShapePicture.Neon;
-import HwpDoc.HwpElement.HwpRecord_ShapePicture.PicEffectType;
-import HwpDoc.HwpElement.HwpRecord_ShapePicture.Reflect;
-import HwpDoc.HwpElement.HwpRecord_ShapePicture.Shadow;
-import HwpDoc.HwpElement.HwpRecord_ShapePicture.SoftEdge;
 
 public class Ctrl_EqEdit extends Ctrl_GeneralShape {
 	private static final Logger log = Logger.getLogger(Ctrl_EqEdit.class.getName());
@@ -104,6 +101,80 @@ public class Ctrl_EqEdit extends Ctrl_GeneralShape {
                 break;
             }
         }
+    }
+	
+	public static int parseElement(Ctrl_EqEdit obj, int size, byte[] buf, int off, int version) throws HwpParseException, NotImplementedException {
+        int offset = off;
+        
+        obj.attr        = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        short len       = (short) ((buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF)*2);
+        offset += 2;
+        obj.eqn         = new String(buf, offset, len, StandardCharsets.UTF_16LE);
+        offset += len;
+        obj.charSize    = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.color       = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.baseline    = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        if (size-(offset-off) > 0) {
+            len             = (short) ((buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF)*2);
+            offset += 2;
+        }
+        if (size-(offset-off) > 0) {
+            obj.version     = new String(buf, offset, len, StandardCharsets.UTF_16LE);
+            offset += len;
+        }
+        if (offset-off+2 <= size) { // 5.0.33 버전에서는 이 부분 없음
+            len             = (short) ((buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF)*2);
+            offset += 2;
+            if (offset-off+len <= size) {
+                obj.font        = new String(buf, offset, len, StandardCharsets.UTF_16LE);
+                offset += len;
+            }
+        }
+        
+        if (offset-off-size!=0) {
+            log.fine("[CtrlId]=" + obj.ctrlId + ", size=" + size + ", but currentSize=" + (offset-off));
+            throw new HwpParseException();
+        }
+        
+        return offset-off;
+    }
+    
+    public static int parseCtrl(Ctrl_EqEdit shape, int size, byte[] buf, int off, int version) throws HwpParseException, NotImplementedException {
+        int offset = off;
+        
+        int len = Ctrl_Common.parseCtrl(shape, size, buf, offset, version);
+        offset += len;
+
+        return offset-off;
+    }
+
+    public static int parseListHeaderAppend(Ctrl_GeneralShape obj, int size, byte[] buf, int off, int version) throws HwpParseException, NotImplementedException {
+        int offset = off;
+        if (size==24) {
+            offset += 2;
+            obj.captionAttr     = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+            offset += 4;
+            obj.captionWidth    = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+            offset += 4;
+            obj.captionSpacing  = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
+            offset += 2;
+            obj.captionMaxW     = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+            offset += 4;
+            offset += 8;
+        }
+        
+        log.fine("                                                  ctrlID="+obj.ctrlId+", 캡션 parsing이지만, 정확한 parsing은 어떻게 해야 하는지 알 수 없음.");
+        
+        if (offset-off-size!=0) {
+            log.fine("[CtrlID]=" + obj.ctrlId + ", size=" + size + ", but currentSize=" + (offset-off));
+            throw new HwpParseException();
+        }
+        
+        return offset-off;
     }
 
     public String toString() {

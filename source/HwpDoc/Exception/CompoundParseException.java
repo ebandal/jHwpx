@@ -23,17 +23,21 @@
  * 작성자 : 반희수 ebandal@gmail.com  
  * 작성일 : 2022.10
  */
-package HwpDoc.paragraph;
+package HwpDoc.Exception;
 
-import org.w3c.dom.Node;
+import HwpDoc.ErrCode;
 
-import HwpDoc.Exception.NotImplementedException;
-
-public class CellParagraph extends HwpParagraph {
-    
-	public CellParagraph() { super(); }
-
-    public CellParagraph(Node node, int version) throws NotImplementedException {
-        super(node, version);
-    }
+public class CompoundParseException extends Exception {
+	private static final long serialVersionUID = -583571405184537607L;
+	private ErrCode errCode;
+	
+	public CompoundParseException() {
+		this(ErrCode.UNDEFINED);
+	}
+	
+	public CompoundParseException(ErrCode errCode) {
+		super();
+		this.errCode = errCode;
+	}
+	
 }

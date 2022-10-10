@@ -27,12 +27,14 @@
  */
 package HwpDoc.paragraph;
 
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import HwpDoc.Exception.HwpParseException;
 import HwpDoc.Exception.NotImplementedException;
 import HwpDoc.paragraph.Ctrl_ShapeEllipse.ArcType;
 
@@ -80,6 +82,78 @@ public class Ctrl_ShapePolygon extends Ctrl_GeneralShape {
         }
     }
 
+	public static int parseElement(Ctrl_ShapePolygon obj, int size, byte[] buf, int off, int version) throws HwpParseException, NotImplementedException {
+        int offset = off;
+        
+        obj.nPoints     = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        
+        if (obj.nPoints > 0) {
+            obj.points = new Point[obj.nPoints];
+            for (int i=0; i<obj.nPoints; i++) {
+                obj.points[i] = new Point();
+                obj.points[i].x = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+                offset += 4;
+                obj.points[i].y = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+                offset += 4;
+            }
+        }
+
+        if (size-(offset-off)==4) {
+            // [HWP ambiguous] following 4bytes are unknown.
+            // 따라오는 4bytes 정보를 알 수 없음. 문서에는 없는 내용. 4byte 추가함.
+            offset += 4;
+        }
+        
+        if (offset-off-size!=0) {
+            log.fine("[CtrlId]=" + obj.ctrlId + ", size=" + size + ", but currentSize=" + (offset-off));
+            throw new HwpParseException();
+        }
+        
+        return offset-off;
+    }
+    
+    public static int parseCtrl(Ctrl_ShapePolygon shape, int size, byte[] buf, int off, int version) throws HwpParseException, NotImplementedException {
+        int offset = off;
+        offset += Ctrl_GeneralShape.parseCtrl(shape, size,  buf,  off,  version);
+
+        return offset-off;
+    }
+    
+    public static int parseListHeaderAppend(Ctrl_ShapePolygon obj, int size, byte[] buf, int off, int version) throws HwpParseException, NotImplementedException {
+        int offset = off;
+        offset += 2;
+        
+        // 글상자 속성
+        obj.leftSpace   = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
+        offset += 2;
+        obj.rightSpace  = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
+        offset += 2;
+        obj.upSpace     = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
+        offset += 2;
+        obj.downSpace   = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
+        offset += 2;
+        obj.maxTxtWidth = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        
+        // 알 수 없는 23byte
+        offset += 13;
+        
+        if (size-(offset-off)>0) {
+            offset += 10;
+            // 필드이름 정보 (앞의 23byte 때문에  시작위치가 여기부터인지도 확실하지 않음)
+            int strLen      = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
+            offset += 2;
+            String fieldName= new String(buf, offset, strLen*2, StandardCharsets.UTF_16LE);
+            offset += (strLen*2);
+            log.fine("                                                  [CtrlId]=" + obj.ctrlId + ", fieldName=" + fieldName);
+            
+            offset += (size-(offset-off));
+        }
+        
+        return offset-off;
+    }
+	    
     public String toString() {
 		StringBuffer strb = new StringBuffer();
 		strb.append("CTRL("+ctrlId+")")

@@ -29,15 +29,18 @@ package HwpDoc.paragraph;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import HwpDoc.Exception.HwpParseException;
 import HwpDoc.Exception.NotImplementedException;
-import HwpDoc.HwpElement.HwpRecord;
 
 public class HwpParagraph {
+    private static final Logger log = Logger.getLogger(HwpParagraph.class.getName());
+
 	public String	 		paraText;		// HWPTAG_PARA_TEXT
 	public short			paraShapeID;	// HWPTAG_PARA_HEADER
 	public short			paraStyleID;	// HWPTAG_PARA_HEADER
@@ -49,23 +52,7 @@ public class HwpParagraph {
 
 	public HwpParagraph() { }
 
-    public static class CharShape {
-		public int	start;
-		public int	charShapeID;
-	}
 
-	public static class LineSeg {
-		public int startPos;
-		public int lineVerticalPos;
-		public int lineHeight;
-		public int textHeight;
-		public int lineDistanceToBase;
-		public int lineSpacing;
-		public int columnStartPos;
-		public int segmentWidth;
-		public int lineTag;
-		public boolean isHeadingApplied;
-	}
 
 	public HwpParagraph(Node node, int version) throws NotImplementedException {
 
@@ -119,7 +106,7 @@ public class HwpParagraph {
                     NodeList childNodeList = child.getChildNodes();
                     for (int j=0; j<childNodeList.getLength(); j++) {
                         Node grandChild = childNodeList.item(j);
-                        recursive_HwpParagraph(grandChild);
+                        recursive_HwpParagraph(grandChild, version);
                     }
                 }
                 break;
@@ -129,7 +116,7 @@ public class HwpParagraph {
         }
 	}
 	
-	private void recursive_HwpParagraph(Node node) throws NotImplementedException {
+	private void recursive_HwpParagraph(Node node, int version) throws NotImplementedException {
 
         if (ctrls == null) {
             ctrls = new ArrayList<Ctrl>();
@@ -150,16 +137,14 @@ public class HwpParagraph {
                 NodeList nodeList = node.getChildNodes();
                 for (int j=0; j<nodeList.getLength(); j++) {
                     Node child = nodeList.item(j);
-                    ctrl = Ctrl.getCtrl(child);
+                    ctrl = Ctrl.getCtrl(child, version);
                     ctrls.add(ctrl);
                 }
     	    }
     	    break;
 	    case "hp:t":
             {
-                HwpRecord.dumpNode(node, 1);
                 NamedNodeMap attrs = node.getAttributes();
-
 
                 if (attrs.getNamedItem("charPrIDRef")!=null) {
                     if (charShapes==null) {
@@ -196,128 +181,169 @@ public class HwpParagraph {
             }
             break;
 	    case "hp:tbl":
-        {
-            HwpRecord.dumpNode(node, 1);
-            // [[hp:sz: null], [hp:pos: null], [hp:outMargin: null], [hp:inMargin: null], [hp:tr: null], [hp:tr: null], [hp:tr: null], [hp:tr: null], [hp:tr: null], [hp:tr: null], [hp:tr: null], [hp:tr: null], [hp:tr: null], [hp:tr: null], [hp:tr: null], [hp:tr: null]]
-        }
-        break;
+	        ctrl = new Ctrl_Table(" lbt" , node, version);
+            ctrls.add(ctrl);
+            break;
 	    case "hp:pic":
-        {
-            HwpRecord.dumpNode(node, 1);
-        }
-        break;
+	        ctrl = new Ctrl_ShapePic("cip$", node, version);
+	        ctrls.add(ctrl);
+	        break;
 	    case "hp:container":
-        {
-            HwpRecord.dumpNode(node, 1);
-        }
-        break;
+	        ctrl = new Ctrl_Container("noc$", node, version);
+	        ctrls.add(ctrl);
+	        break;
 	    case "hp:ole":
-        {
-            HwpRecord.dumpNode(node, 1);
-        }
-        break;
+	        ctrl = new Ctrl_ShapeOle("elo$", node, version);
+	        ctrls.add(ctrl);
+	        break;
 	    case "hp:equation":
-        {
-            HwpRecord.dumpNode(node, 1);
-        }
-        break;
+	        ctrl = new Ctrl_EqEdit("deqe", node, version);
+	        ctrls.add(ctrl);
+	        break;
 	    case "hp:line":
-        {
-            HwpRecord.dumpNode(node, 1);
-        }
-        break;
+	        ctrl = new Ctrl_ShapeLine("nil$", node, version);
+	        ctrls.add(ctrl);
+	        break;
 	    case "hp:rect":
-        {
-            HwpRecord.dumpNode(node, 1);
-            // [[hp:offset: null], [hp:orgSz: null], [hp:curSz: null], [hp:flip: null], [hp:rotationInfo: null], [hp:renderingInfo: null], [hp:lineShape: null], [hc:fillBrush: null], [hp:shadow: null], [hp:drawText: null], [hc:pt0: null], [hc:pt1: null], [hc:pt2: null], [hc:pt3: null], [hp:sz: null], [hp:pos: null], [hp:outMargin: null]]
-        }
-        break;
+	        ctrl = new Ctrl_ShapeRect("cer$", node, version);
+	        ctrls.add(ctrl);
+	        break;
 	    case "hp:ellipse":
-        {
-            HwpRecord.dumpNode(node, 1);
-        }
-        break;
+	        ctrl = new Ctrl_ShapeEllipse("lle$", node, version);
+	        ctrls.add(ctrl);
+	        break;
 	    case "hp:arc":
-        {
-            HwpRecord.dumpNode(node, 1);
-        }
-        break;
+	        ctrl = new Ctrl_ShapeArc("cra$", node, version);
+	        ctrls.add(ctrl);
+	        break;
 	    case "hp:polygon":
-        {
-            HwpRecord.dumpNode(node, 1);
-        }
-        break;
+	        ctrl = new Ctrl_ShapePolygon("lop$", node, version);
+	        ctrls.add(ctrl);
+	        break;
 	    case "hp:curve":
-        {
-            HwpRecord.dumpNode(node, 1);
-        }
-        break;
+	        ctrl = new Ctrl_ShapeCurve("ruc$", node, version);
+	        ctrls.add(ctrl);
+	        break;
 	    case "hp:connectLine":
-        {
-            HwpRecord.dumpNode(node, 1);
-        }
-        break;
+	        ctrl = new Ctrl_ShapeConnectLine("loc$", node, version);
+	        ctrls.add(ctrl);
+	        break;
 	    case "hp:textart":
-        {
-            HwpRecord.dumpNode(node, 1);
-        }
-        break;
+	        ctrl = new Ctrl_ShapeTextArt("tat$", node, version);
+	        ctrls.add(ctrl);
+	        break;
+        case "hp:video":
+            ctrl = new Ctrl_ShapeVideo("div$", node, version);
+            ctrls.add(ctrl);
+            break;
 	    case "hp:compose":
-        {
-            HwpRecord.dumpNode(node, 1);
-        }
-        break;
 	    case "hp:dutmal":
-        {
-            HwpRecord.dumpNode(node, 1);
-        }
-        break;
 	    case "hp:btn":
-        {
-            HwpRecord.dumpNode(node, 1);
-        }
-        break;
 	    case "hp:radioBtn":
-        {
-            HwpRecord.dumpNode(node, 1);
-        }
-        break;
 	    case "hp:checkBtn":
-        {
-            HwpRecord.dumpNode(node, 1);
-        }
-        break;
 	    case "hp:comboBox":
-        {
-            HwpRecord.dumpNode(node, 1);
-        }
-        break;
 	    case "hp:edit":
-        {
-            HwpRecord.dumpNode(node, 1);
-        }
-        break;
 	    case "hp:listBox":
-        {
-            HwpRecord.dumpNode(node, 1);
-        }
-        break;
 	    case "hp:scrollBar":
-        {
-            HwpRecord.dumpNode(node, 1);
-        }
-        break;
-	    case "hp:video":
-        {
-            HwpRecord.dumpNode(node, 1);
-        }
-        break;
+	        break;
         default:
             throw new NotImplementedException("recusive_HwpPargraph");
 	    }
-	    
 	}
 
+	public static HwpParagraph parse(int tagNum, int level, int size, byte[] buf, int off, int version) throws HwpParseException {
+        int offset = off;
+        
+        HwpParagraph para = new HwpParagraph();
+        
+        int nchars          = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        if ((nchars&0x80000000)!=0) {
+            nchars &= 0x7fffffff;
+        }
+        int controlMask     = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        para.paraShapeID    = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
+        offset += 2;
+        para.paraStyleID    = buf[offset++];
+        para.breakType      = buf[offset++];
+        short nCharShapeInfo= (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
+        offset += 2;
+        short nRangeTags    = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
+        offset += 2;
+        short nLineSeg      = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
+        offset += 2;
+        int paraInstanceID  = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        if (version>=5032 && offset-off<size) {
+            short changeTrackingMerge= (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
+            offset += 2;
+        }
+        log.fine("                                                  "
+                +"instance="+String.format("0x%X", paraInstanceID)
+                +",문단모양ID="+para.paraShapeID
+                +",스타일ID="+para.paraStyleID
+                +",단나누기종류="+para.breakType
+                +",nchars="+nchars
+                +",nLineSeg="+nLineSeg
+                +",controlMask="+controlMask
+                +",nCharShapeInfo="+nCharShapeInfo
+                +",nRangeTags="+nRangeTags
+                +",paraInstanceID="+paraInstanceID
+                );
 
+        if (offset-off-size != 0 && offset-off!=24) {
+            log.fine("[TAG]=" + tagNum + ", size=" + size + ", but currentSize=" + (offset-off));
+            throw new HwpParseException();
+        }
+        
+        return para;
+    }
 
+    public static int parse(HwpParagraph para, int size, byte[] buf, int off, int version) throws HwpParseException {
+        int offset = off;
+        
+        int nchars          = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        if ((nchars&0x80000000)!=0) {
+            nchars &= 0x7fffffff;
+        }
+        int controlMask     = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        para.paraShapeID    = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
+        offset += 2;
+        para.paraStyleID    = buf[offset++];
+        para.breakType      = buf[offset++];
+        short nCharShapeInfo= (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
+        offset += 2;
+        short nRangeTags    = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
+        offset += 2;
+        short nLineSegs     = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
+        offset += 2;
+        int paraInstanceID  = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        if (version>=5032 && offset-off<size) {
+            short changeTrackingMerge= (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
+            offset += 2;
+        }
+        log.fine("                                                  "
+                +"instance="+String.format("0x%X", paraInstanceID)
+                +",문단모양ID="+para.paraShapeID
+                +",스타일ID="+para.paraStyleID
+                +",단나누기종류="+para.breakType
+                +",nchars="+nchars
+                +",nLineSeg="+nLineSegs
+                +",controlMask="+controlMask
+                +",nCharShapeInfo="+nCharShapeInfo
+                +",nRangeTags="+nRangeTags
+                +",paraInstanceID="+paraInstanceID
+                );
+
+        if (offset-off-size != 0 && offset-off!=24) {
+            log.fine("[PARA] size=" + size + ", but currentSize=" + (offset-off));
+            throw new HwpParseException();
+        }
+
+        return offset-off;
+    }
 }

@@ -37,10 +37,9 @@ import HwpDoc.HwpDocInfo;
 import HwpDoc.Exception.HwpParseException;
 import HwpDoc.Exception.NotImplementedException;
 import HwpDoc.HwpElement.HwpRecordTypes.LineType2;
-import HwpDoc.HwpElement.HwpRecord_FaceName.AltType;
 
 public class HwpRecord_BorderFill extends HwpRecord {
-	private static final Logger log = Logger.getLogger(HwpRecord_ShapePicture.class.getName());
+	private static final Logger log = Logger.getLogger(HwpRecord_BorderFill.class.getName());
 	private HwpDocInfo		parent;
 	final  float[]			LINE_THICK	= { 0.1f, 0.12f, 0.15f, 0.2f, 0.25f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 1.0f, 1.5f, 2.0f, 3.0f, 4.0f, 5.0f };
 	
@@ -147,8 +146,6 @@ public class HwpRecord_BorderFill extends HwpRecord {
         super(HwpTag.HWPTAG_BORDER_FILL, 0, 0);
         this.parent = docInfo;
 
-        dumpNode(node, 1);
-        
         NamedNodeMap attributes = node.getAttributes();
         
         // id는 처리하지 않는다. List<HwpRecord_BorderFill>에 순차적으로 추가한다. 
@@ -330,7 +327,7 @@ public class HwpRecord_BorderFill extends HwpRecord {
         return border;
     }
 	
-	private static Fill readFillBrush(Node child) {
+	public static Fill readFillBrush(Node child) {
 	    Fill fill = new Fill();
         NodeList grandChildren = child.getChildNodes();
         for (int j=0; j<grandChildren.getLength(); j++) {

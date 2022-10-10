@@ -29,15 +29,14 @@ package HwpDoc.paragraph;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import HwpDoc.Exception.HwpParseException;
 import HwpDoc.Exception.NotImplementedException;
-import HwpDoc.paragraph.Ctrl_Table.CellZone;
 
 public class Ctrl_ObjElement extends Ctrl_Common {
 	private static final Logger log = Logger.getLogger(Ctrl_ObjElement.class.getName());
@@ -97,17 +96,14 @@ public class Ctrl_ObjElement extends Ctrl_Common {
 	    
         NamedNodeMap attributes = node.getAttributes();
         
-        switch(attributes.getNamedItem("href").getNodeValue()) {
-        case "0":
-            break;
-        default:
-            throw new NotImplementedException("Ctrl_ObjElement");
-        }
+        // attributes.getNamedItem("href").getNodeValue();  // 변경 추적 대상 파일의 경로
+        // attributes.getNamedItem("InstId").getNodeValue();
         
         String numStr = attributes.getNamedItem("groupLevel").getNodeValue();
         nGrp = (short) Integer.parseInt(numStr);
 
-        // numStr = attributes.getNamedItem("InstId").getNodeValue();
+        matrix = new double[(nGrp+1)*6];
+        matrixSeq = new double[(nGrp+1)*6*2];
 
         int matrixIdx = 0;
         NodeList nodeList = node.getChildNodes();
@@ -119,9 +115,9 @@ public class Ctrl_ObjElement extends Ctrl_Common {
                 {
                     NamedNodeMap childAttrs = child.getAttributes();
                     numStr = childAttrs.getNamedItem("x").getNodeValue();
-                    xGrpOffset = Integer.parseInt(numStr);
+                    xGrpOffset = (int) Long.parseLong(numStr);
                     numStr = childAttrs.getNamedItem("y").getNodeValue();
-                    yGrpOffset = Integer.parseInt(numStr);
+                    yGrpOffset = (int) Long.parseLong(numStr);
                 }
                 break;
             case "hp:orgSz":
@@ -176,9 +172,6 @@ public class Ctrl_ObjElement extends Ctrl_Common {
                 break;
             case "hp:renderingInfo":
                 {
-                    matrix = new double[nGrp*6];
-                    matrixSeq = new double[nGrp*6*2];
-                    
                     NodeList childNodeList = child.getChildNodes();
                     for (int j=0; j<childNodeList.getLength(); j++) {
                         Node grandChild = childNodeList.item(j);
@@ -217,6 +210,58 @@ public class Ctrl_ObjElement extends Ctrl_Common {
         numStr = attributes.getNamedItem("e6").getNodeValue();
         matrix[offset+5] = (short) Float.parseFloat(numStr);
 	}
+	
+	public static int parseCtrl(Ctrl_ObjElement obj, int size, byte[] buf, int off, int version) throws HwpParseException {
+        int offset = off;
+        
+        int len = Ctrl_Common.parseCtrl(obj, size, buf, offset, version);
+        offset += len;
+
+        obj.xGrpOffset      = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.yGrpOffset      = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.nGrp            = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
+        offset += 2;
+        obj.ver             = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
+        offset += 2;
+        obj.iniWidth        = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.iniHeight       = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.curWidth        = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.curHeight       = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.horzFlip        = (buf[offset]&0x01)==0x01?true:false;
+        obj.verFlip         = (buf[offset]&0x02)==0x02?true:false;
+        offset += 4;
+        obj.rotat           = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
+        offset += 2;
+        obj.xCenter         = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.yCenter         = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.matCnt          = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
+        offset += 2;
+        
+        obj.matrix = new double[6];
+        for (int i=0;i<6;i++) {
+            obj.matrix[i] = ByteBuffer.wrap(buf, offset, 8).order(ByteOrder.LITTLE_ENDIAN).getDouble();
+            offset += 8;
+        }
+
+        int matrixSize = obj.matCnt*6*2;
+        if (matrixSize>0) {
+            obj.matrixSeq = new double[matrixSize];
+            for (int i=0;i<matrixSize;i++) {
+                obj.matrixSeq[i] = ByteBuffer.wrap(buf, offset, 8).order(ByteOrder.LITTLE_ENDIAN).getDouble();
+                offset += 8;
+            }
+        }
+        
+        return offset-off;
+    }
 	
     public String toString() {
 		StringBuffer strb = new StringBuffer();

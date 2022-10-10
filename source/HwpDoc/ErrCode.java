@@ -23,17 +23,34 @@
  * 작성자 : 반희수 ebandal@gmail.com  
  * 작성일 : 2022.10
  */
-package HwpDoc.paragraph;
+package HwpDoc;
 
-import org.w3c.dom.Node;
+public enum ErrCode {
+	
+	UNDEFINED 					(0),
+	SIGANTURE_NOT_MATCH			(1),
+	INVALID_MAJORVERSION		(2),
+	INVALID_MINORVERSION		(3),
+	INVALID_BYTEORDER			(4),
+	INVALID_SECTORSHIFT			(5),
+	INVALID_MINISECTORSHIFT		(6),
+	INVALID_NUM_DIRECTORYSECTOR	(7),
+	INVALID_MINI_STREAM_CUTOFF	(8),
+	FILE_READ_ERROR				(9),
+	;
+	
+	
+	private int errCode;
+	
+	ErrCode(int code) {
+		this.errCode = code;
+	}
 
-import HwpDoc.Exception.NotImplementedException;
+	public void set(int errCode) {
+		this.errCode = errCode;
+	}
 
-public class CellParagraph extends HwpParagraph {
-    
-	public CellParagraph() { super(); }
-
-    public CellParagraph(Node node, int version) throws NotImplementedException {
-        super(node, version);
-    }
+	public int get() {
+		return errCode;
+	}
 }

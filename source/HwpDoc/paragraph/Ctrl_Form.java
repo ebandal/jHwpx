@@ -20,20 +20,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  * 
+ * 본 제품은 한글과컴퓨터의 ᄒᆞᆫ글 문서 파일(.hwp) 공개 문서를 참고하여 개발하였습니다.
+ * 개방형 워드프로세서 마크업 언어(OWPML) 문서 구조 KS X 6101:2018 문서를 참고하였습니다.
  * 작성자 : 반희수 ebandal@gmail.com  
  * 작성일 : 2022.10
  */
 package HwpDoc.paragraph;
 
-import org.w3c.dom.Node;
+import java.util.logging.Logger;
 
-import HwpDoc.Exception.NotImplementedException;
+public class Ctrl_Form extends Ctrl {
+	private static final Logger log = Logger.getLogger(Ctrl_Form.class.getName());
+	private int size;
+	
+	
+	public Ctrl_Form(String ctrlId, int size, byte[] buf, int off, int version) {
+		super(ctrlId);
+		this.size = size;
 
-public class CellParagraph extends HwpParagraph {
-    
-	public CellParagraph() { super(); }
-
-    public CellParagraph(Node node, int version) throws NotImplementedException {
-        super(node, version);
-    }
+		log.fine("                                                  CTRL("+ctrlId+")"+" 해석할 수 없습니다.");
+	}
+	
+	@Override
+	public int getSize() {
+		return size;
+	}
 }

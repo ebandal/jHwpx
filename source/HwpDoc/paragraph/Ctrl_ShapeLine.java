@@ -33,6 +33,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import HwpDoc.Exception.HwpParseException;
 import HwpDoc.Exception.NotImplementedException;
 
 public class Ctrl_ShapeLine extends Ctrl_GeneralShape {
@@ -99,6 +100,44 @@ public class Ctrl_ShapeLine extends Ctrl_GeneralShape {
                 break;
             }
         }
+    }
+
+   public static int parseElement(Ctrl_ShapeLine obj, int size, byte[] buf, int off, int version) throws HwpParseException, NotImplementedException {
+        int offset = off;
+        
+        if (obj.ctrlId!=null && obj.ctrlId.equals("loc$")) {
+            offset += 4;
+        }
+        
+        obj.startX  = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.startY  = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.endX    = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.endY    = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        if (offset-off == size) {
+            return size;
+        } else {
+            obj.attr    = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
+            offset += 2;
+            // 18byte가 아닌 20byte가 온다. 따라서 2byte를 임의로 더해준다.
+            offset += 2;
+            
+            if (offset-off-size!=0) {
+                log.fine("[CtrlId]=" + obj.ctrlId + ", size=" + size + ", but currentSize=" + (offset-off));
+                throw new HwpParseException();
+            }
+            return offset-off;
+        }
+    }
+
+    public static int parseCtrl(Ctrl_ShapeLine shape, int size, byte[] buf, int off, int version) throws HwpParseException, NotImplementedException {
+        int offset = off;
+        offset += Ctrl_GeneralShape.parseCtrl(shape, size, buf, offset, version);
+
+        return offset-off;
     }
 
     public String toString() {

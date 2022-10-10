@@ -36,6 +36,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import HwpDoc.Exception.HwpParseException;
 import HwpDoc.Exception.NotImplementedException;
 
 public class Ctrl_Common extends Ctrl {
@@ -176,13 +177,15 @@ public class Ctrl_Common extends Ctrl {
         String numStr = attributes.getNamedItem("id").getNodeValue();
         objInstanceID = Integer.parseInt(numStr); 
         
-        switch(attributes.getNamedItem("pageBreak").getNodeValue()) {
-        case "TABLE":
-        case "CELL":
-        case "NONE":
-            break;
-        default:
-            throw new NotImplementedException("Ctrl_Common");
+        if (attributes.getNamedItem("pageBreak")!=null) {
+            switch(attributes.getNamedItem("pageBreak").getNodeValue()) {
+            case "TABLE":
+            case "CELL":
+            case "NONE":
+                break;
+            default:
+                throw new NotImplementedException("Ctrl_Common");
+            }
         }
 
         switch(attributes.getNamedItem("textFlow").getNodeValue()) {
@@ -379,6 +382,94 @@ public class Ctrl_Common extends Ctrl {
         }
 	}
 
+	public static int parseCtrl(Ctrl_Common obj, int size, byte[] buf, int off, int version) throws HwpParseException {
+        int offset = off;
+        boolean  unknownCtrlID = false;
+        
+        String ctrlId = new String(buf, offset, 4, StandardCharsets.US_ASCII);
+        switch(ctrlId) {
+        case "nil$":    // 선
+        case "loc$":    // 연결선
+        case "cer$":    // 사각형
+        case "lle$":    // 타원
+        case "cra$":    // 호
+        case "lop$":    // 다각형
+        case "ruc$":    // 곡선
+        case "deqe":    // 한글97 수식
+        case "cip$":    // 그림
+        case "elo$":    // OLE
+        case "noc$":    // 묶음 개체
+        case "div$":    // 비디오
+        case "tat$":    // 글맵시
+            log.finer("[개체 공통 속성]을 더 읽지 않습니다. [개체 공통 속성] 영역에서  CtrlID="+ctrlId+" 가 나왔습니다.");
+            return 4;
+        default:
+            unknownCtrlID = true;
+        }
+        
+        // 문서에는  개체 공통 속성을 읽는 것으로 되어 있으나, 개체 공통 속성이 오는 경우는 찾을 수 없다.
+        // 개체 공통 속성을 읽지 않기 위해  읽은 byte 수를 0으로 리턴한다.
+        if (unknownCtrlID==true) {
+            return 0;
+        }
+
+        offset += 4;
+        obj.objAttr     = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.vertOffset  = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.horzOffset  = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.width       = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.height      = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.zOrder      = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.outMargin = new short[4];
+        for (int i=0;i<4;i++) {
+            obj.outMargin[i]    = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
+            offset += 2;
+        }
+        obj.objInstanceID   = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.blockPageBreak  = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        int descLen     = (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF)*2;
+        offset += 2;
+        if (descLen > 0) {
+            obj.objDesc = new String(buf, offset, descLen, StandardCharsets.UTF_16LE);
+            offset += descLen;
+        }
+        
+        if (offset-off < size) {
+            obj.captionAttr     = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+            offset += 4;
+            obj.captionWidth    = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+            offset += 4;
+            obj.captionSpacing  = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+            offset += 4;
+            obj.captionMaxW     = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+            offset += 4;
+        }
+        
+        return offset-off;
+    }
+    
+    public static int parseCaption(Ctrl_Common obj, int size, byte[] buf, int off, int version) throws HwpParseException {
+        int offset = off;
+
+        obj.captionAttr     = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.captionWidth    = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.captionSpacing  = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        obj.captionMaxW     = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        
+        return offset-off;
+    }
 
     public String toString() {
 		StringBuffer strb = new StringBuffer();

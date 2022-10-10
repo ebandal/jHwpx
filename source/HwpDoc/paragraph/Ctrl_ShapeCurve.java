@@ -33,6 +33,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import HwpDoc.Exception.HwpParseException;
 import HwpDoc.Exception.NotImplementedException;
 
 public class Ctrl_ShapeCurve extends Ctrl_GeneralShape {
@@ -89,6 +90,49 @@ public class Ctrl_ShapeCurve extends Ctrl_GeneralShape {
         }
     }
 
+	public static int parseElement(Ctrl_ShapeCurve obj, int size, byte[] buf, int off, int version) throws HwpParseException, NotImplementedException {
+        int offset = off;
+        
+        obj.nPoints             = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        offset += 4;
+        
+        if (obj.nPoints > 0) {
+            obj.points = new Point[obj.nPoints];
+            for (int i=0;i<obj.nPoints;i++) {
+                obj.points[i] = new Point();
+                obj.points[i].x = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+                offset += 4;
+                obj.points[i].y = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+                offset += 4;
+            }
+        }
+        if (obj.nPoints>1) {
+            obj.segmentType = new byte[obj.nPoints-1];
+            for (int i=0;i<obj.nPoints-1;i++) {
+                obj.segmentType[i]  = buf[offset++];
+            }
+        }
+        
+        // [HWP ambiguous] following 4bytes are unknown.
+        // 4byte를 알 수 없음. 점이 4개여서 4byte인지, 4byte 필드가 존재하는지 알 수 없음.
+        offset += 4;
+
+        if (offset-off-size!=0) {
+            log.fine("[CtrlId]=" + obj.ctrlId + ", size=" + size + ", but currentSize=" + (offset-off));
+            throw new HwpParseException();
+        }
+        
+        return offset-off;
+    }
+    
+    public static int parseCtrl(Ctrl_ShapeCurve shape,  int size, byte[] buf, int off, int version) throws HwpParseException, NotImplementedException {
+        int offset = off;
+        int len = Ctrl_GeneralShape.parseCtrl(shape, size,  buf,  off,  version);
+        offset += len;
+        
+        return offset-off;
+    }
+	    
     public String toString() {
 		StringBuffer strb = new StringBuffer();
 		strb.append("CTRL("+ctrlId+")")

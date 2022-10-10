@@ -23,17 +23,44 @@
  * 작성자 : 반희수 ebandal@gmail.com  
  * 작성일 : 2022.10
  */
-package HwpDoc.paragraph;
+package HwpDoc;
 
-import org.w3c.dom.Node;
+public class HwpDetectException extends Exception {
+	private static final long serialVersionUID = -6388448371538804607L;
+	private ErrCode errCode;
 
-import HwpDoc.Exception.NotImplementedException;
-
-public class CellParagraph extends HwpParagraph {
-    
-	public CellParagraph() { super(); }
-
-    public CellParagraph(Node node, int version) throws NotImplementedException {
-        super(node, version);
+	public HwpDetectException() {
+        super();
     }
+
+	public HwpDetectException(ErrCode errCode) {
+        super(errCode.toString());
+        this.errCode = errCode;
+	}
+
+	public HwpDetectException(ErrCode errCode, String messsage) {
+        super(messsage);
+        this.errCode = errCode;
+	}
+	
+	public HwpDetectException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
+
+    public HwpDetectException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public HwpDetectException(String message) {
+        super(message);
+    }
+
+    public HwpDetectException(Throwable cause) {
+        super(cause);
+    }
+    
+    public ErrCode getReason() {
+    	return errCode==null?ErrCode.UNDEFINED:errCode;
+    }
+
 }

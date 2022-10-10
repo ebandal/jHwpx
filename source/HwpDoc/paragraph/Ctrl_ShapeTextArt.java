@@ -33,6 +33,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import HwpDoc.Exception.HwpParseException;
 import HwpDoc.Exception.NotImplementedException;
 
 public class Ctrl_ShapeTextArt extends Ctrl_GeneralShape {
@@ -143,6 +144,27 @@ public class Ctrl_ShapeTextArt extends Ctrl_GeneralShape {
                 break;
             }
         }
+    }
+	
+	public static int parseElement(Ctrl_ShapeTextArt obj, int size, byte[] buf, int off, int version) throws HwpParseException, NotImplementedException {
+        int offset = off;
+
+        // [HWP ambiguous] following 120bytes are unknown.
+        // Document doesn't mention about this at all.
+
+        if (offset-off-size!=0) {
+            log.fine("[CtrlId]=" + obj.ctrlId + ", size=" + size + ", but currentSize=" + (offset-off));
+        }
+        
+        return size;
+    }
+    
+    public static int parseCtrl(Ctrl_ShapeTextArt shape,  int size, byte[] buf, int off, int version) throws HwpParseException, NotImplementedException {
+        int offset = off;
+        int len = Ctrl_GeneralShape.parseCtrl(shape, size,  buf,  off,  version);
+        offset += len;
+        
+        return offset-off;
     }
 
     public String toString() {
