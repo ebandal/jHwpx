@@ -34,43 +34,35 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import HwpDoc.Exception.NotImplementedException;
+import HwpDoc.HwpElement.HwpRecord_ParaShape.VerticalAlign;
 
-public class Ctrl_ShapeLine extends Ctrl_GeneralShape {
-	private static final Logger log = Logger.getLogger(Ctrl_ShapeLine.class.getName());
+public class Ctrl_ShapeConnectLine extends Ctrl_GeneralShape {
+	private static final Logger log = Logger.getLogger(Ctrl_ShapeConnectLine.class.getName());
 	private int size;
 	
-	// 선 개체 속성
-	public int		startX;	// 시작점 X 좌표
-	public int		startY;	// 시작점 Y 좌표
-	public int		endX;	// 끝점 X 좌표
-	public int		endY;	// 끝점 Y 좌표
-	public short	attr;	// 속성
+	public ConnectLineType type;       // 연결선 형식
+	public ConnectPoint    startPt;    // 연결선 시작점 정보
+	public ConnectPoint    endPt;      // 연결선 끝점 정보
 	
-	public Ctrl_ShapeLine(String ctrlId, int size, byte[] buf, int off, int version) {
+	public Ctrl_ShapeConnectLine(String ctrlId, int size, byte[] buf, int off, int version) {
 		super(ctrlId, size, buf, off, version);
 		this.size = offset-off;
 
 		log.fine("                                                  " + toString());
 	}
 	
-	public Ctrl_ShapeLine(Ctrl_GeneralShape shape) {
+	public Ctrl_ShapeConnectLine(Ctrl_GeneralShape shape) {
 		super(shape);
 		
 		this.size = shape.getSize();
 	}
 	
-	public Ctrl_ShapeLine(String ctrlId, Node node, int version) throws NotImplementedException {
+	public Ctrl_ShapeConnectLine(String ctrlId, Node node, int version) throws NotImplementedException {
 	    super(ctrlId, node, version);
 	    
         NamedNodeMap attributes = node.getAttributes();
-        // 처음 생성 시 수직선 또는 수평선일때, 선의 방향이 언제나 오른쪽(위쪽)으로 잡힘으로 인한 현상때문에 방향을 바로 잡아주기 위한 속성
-        if (attributes.getNamedItem("isReverseHV")!=null) {
-            switch(attributes.getNamedItem("isReverseHV").getNodeValue()) {
-            case "0":
-                attr = 0;   break;
-            case "1":
-                attr = 1;   break;
-            }
+        if (attributes.getNamedItem("type")!=null) {
+            type = ConnectLineType.valueOf(attributes.getNamedItem("type").getNodeValue());
         }
         
         String numStr;
@@ -83,18 +75,26 @@ public class Ctrl_ShapeLine extends Ctrl_GeneralShape {
                 {
                     NamedNodeMap childAttrs = child.getAttributes();
                     numStr = childAttrs.getNamedItem("x").getNodeValue();
-                    startX = Integer.parseInt(numStr);
+                    startPt.x = Integer.parseInt(numStr);
                     numStr = childAttrs.getNamedItem("y").getNodeValue();
-                    startY = Integer.parseInt(numStr);
+                    startPt.y = Integer.parseInt(numStr);
+                    numStr = childAttrs.getNamedItem("subjectIDRef").getNodeValue();
+                    startPt.subjectIDRef = (short) Integer.parseInt(numStr);
+                    numStr = childAttrs.getNamedItem("subjectIdx").getNodeValue();
+                    startPt.subjectIdx = (short) Integer.parseInt(numStr);
                 }
                 break;
             case "hp:endPt":      // 끝점
                 {
                     NamedNodeMap childAttrs = child.getAttributes();
                     numStr = childAttrs.getNamedItem("x").getNodeValue();
-                    endX = Integer.parseInt(numStr);
+                    endPt.x = Integer.parseInt(numStr);
                     numStr = childAttrs.getNamedItem("y").getNodeValue();
-                    endY = Integer.parseInt(numStr);
+                    endPt.y = Integer.parseInt(numStr);
+                    numStr = childAttrs.getNamedItem("subjectIDRef").getNodeValue();
+                    endPt.subjectIDRef = (short) Integer.parseInt(numStr);
+                    numStr = childAttrs.getNamedItem("subjectIdx").getNodeValue();
+                    endPt.subjectIdx = (short) Integer.parseInt(numStr);
                 }
                 break;
             }
@@ -111,5 +111,38 @@ public class Ctrl_ShapeLine extends Ctrl_GeneralShape {
 	@Override
 	public int getSize() {
 		return size;
+	}
+	
+	public static class ConnectPoint extends Point {
+	    public short subjectIDRef;
+	    public short subjectIdx;
+	}
+	
+	public static enum ConnectLineType {
+	    STRAIGHT_NOARROW   (0x0),
+	    STRAIGHT_ONEWAY    (0x1),
+	    STRAIGHT_BOTH      (0x2),
+	    STROKE_NOARROW     (0x3),
+	    STROKE_ONEWAY      (0x4),
+	    STROKE_BOTH        (0x5),
+	    ARC_NOARROW        (0x6),
+	    ARC_ONEWAY         (0x7),
+	    ARC_BOTH           (0x8);
+	    
+        private int num;
+        
+        private ConnectLineType(int num) { 
+            this.num = num;
+        }
+
+        public static ConnectLineType from(int num) {
+            for (ConnectLineType type: values()) {
+                if (type.num == num)
+                    return type;
+            }
+            return null;
+        }
+	    
+
 	}
 }

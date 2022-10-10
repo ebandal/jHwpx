@@ -34,71 +34,70 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import HwpDoc.Exception.NotImplementedException;
+import HwpDoc.paragraph.Ctrl_ShapeEllipse.ArcType;
 
-public class Ctrl_ShapeLine extends Ctrl_GeneralShape {
-	private static final Logger log = Logger.getLogger(Ctrl_ShapeLine.class.getName());
+public class Ctrl_ShapeArc extends Ctrl_GeneralShape {
+	private static final Logger log = Logger.getLogger(Ctrl_ShapeArc.class.getName());
 	private int size;
 	
-	// 선 개체 속성
-	public int		startX;	// 시작점 X 좌표
-	public int		startY;	// 시작점 Y 좌표
-	public int		endX;	// 끝점 X 좌표
-	public int		endY;	// 끝점 Y 좌표
-	public short	attr;	// 속성
-	
-	public Ctrl_ShapeLine(String ctrlId, int size, byte[] buf, int off, int version) {
+	// 타원 개체 속성
+	public ArcType	type;		// 속성 (표 97참조)
+	public int		centerX;	// 중심 좌표의 X값
+	public int		centerY;	// 중심 좌표의 Y값
+	public int		axixX1;		// 제1축 X 좌표의 값
+	public int		axixY1;		// 제1축 Y 좌표의 값
+	public int		axixX2;		// 제2축 X 좌표의 값
+	public int		axixY2;		// 제2축 Y 좌표의 값
+
+	public Ctrl_ShapeArc(String ctrlId, int size, byte[] buf, int off, int version) {
 		super(ctrlId, size, buf, off, version);
 		this.size = offset-off;
 
 		log.fine("                                                  " + toString());
 	}
-	
-	public Ctrl_ShapeLine(Ctrl_GeneralShape shape) {
+
+	public Ctrl_ShapeArc(Ctrl_GeneralShape shape) {
 		super(shape);
 		
 		this.size = shape.getSize();
 	}
 	
-	public Ctrl_ShapeLine(String ctrlId, Node node, int version) throws NotImplementedException {
-	    super(ctrlId, node, version);
-	    
+	public Ctrl_ShapeArc(String ctrlId, Node node, int version) throws NotImplementedException {
+        super(ctrlId, node, version);
+        
         NamedNodeMap attributes = node.getAttributes();
-        // 처음 생성 시 수직선 또는 수평선일때, 선의 방향이 언제나 오른쪽(위쪽)으로 잡힘으로 인한 현상때문에 방향을 바로 잡아주기 위한 속성
-        if (attributes.getNamedItem("isReverseHV")!=null) {
-            switch(attributes.getNamedItem("isReverseHV").getNodeValue()) {
-            case "0":
-                attr = 0;   break;
-            case "1":
-                attr = 1;   break;
-            }
-        }
+        
+        // 호의 종류
+        type = ArcType.valueOf(attributes.getNamedItem("type").getNodeValue());
         
         String numStr;
         
         NodeList nodeList = node.getChildNodes();
         for (int i=0; i<nodeList.getLength(); i++) {
             Node child = nodeList.item(i);
+            NamedNodeMap childAttrs = child.getAttributes();
             switch(child.getNodeName()) {
-            case "hp:startPt":    // 시작점
-                {
-                    NamedNodeMap childAttrs = child.getAttributes();
-                    numStr = childAttrs.getNamedItem("x").getNodeValue();
-                    startX = Integer.parseInt(numStr);
-                    numStr = childAttrs.getNamedItem("y").getNodeValue();
-                    startY = Integer.parseInt(numStr);
-                }
+            case "hp:center":   // 중심좌표
+                numStr = childAttrs.getNamedItem("x").getNodeValue();
+                centerX = Integer.parseInt(numStr);
+                numStr = childAttrs.getNamedItem("y").getNodeValue();
+                centerY = Integer.parseInt(numStr);
                 break;
-            case "hp:endPt":      // 끝점
-                {
-                    NamedNodeMap childAttrs = child.getAttributes();
-                    numStr = childAttrs.getNamedItem("x").getNodeValue();
-                    endX = Integer.parseInt(numStr);
-                    numStr = childAttrs.getNamedItem("y").getNodeValue();
-                    endY = Integer.parseInt(numStr);
-                }
+            case "hp:ax1":  // 제1축 좌표
+                numStr = childAttrs.getNamedItem("x").getNodeValue();
+                axixX1 = Integer.parseInt(numStr);
+                numStr = childAttrs.getNamedItem("y").getNodeValue();
+                axixY1 = Integer.parseInt(numStr);
+                break;
+            case "hp:ax2":  // 제2축 좌표
+                numStr = childAttrs.getNamedItem("x").getNodeValue();
+                axixX2 = Integer.parseInt(numStr);
+                numStr = childAttrs.getNamedItem("y").getNodeValue();
+                axixY2 = Integer.parseInt(numStr);
                 break;
             }
         }
+
     }
 
     public String toString() {
@@ -107,9 +106,10 @@ public class Ctrl_ShapeLine extends Ctrl_GeneralShape {
 			.append("=공통속성:"+super.toString());
 		return strb.toString();
 	}
-
+	
 	@Override
 	public int getSize() {
 		return size;
 	}
+	
 }

@@ -71,7 +71,7 @@ public class Ctrl_PageNumPos extends Ctrl {
 		this.size = offset-off;
 	}
 	
-	public Ctrl_PageNumPos(String ctrlId, Node node) {
+	public Ctrl_PageNumPos(String ctrlId, Node node, int version) {
 	    super(ctrlId);
 	    
         NamedNodeMap attributes = node.getAttributes();

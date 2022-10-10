@@ -96,8 +96,14 @@ public class Ctrl_HeadFoot extends Ctrl {
 		return offset-off;
 	}
 
-    public Ctrl_HeadFoot(String ctrlId, Node node, boolean isHeader) throws NotImplementedException {
+    public Ctrl_HeadFoot(String ctrlId, Node node, int version) throws NotImplementedException {
         super(ctrlId);
+        
+        if (ctrlId.equals("daeh")) {
+            isHeader = true;
+        } else {
+            isHeader = false;
+        }
 
         NamedNodeMap attributes = node.getAttributes();
         

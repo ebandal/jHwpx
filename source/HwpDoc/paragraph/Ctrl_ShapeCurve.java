@@ -35,67 +35,55 @@ import org.w3c.dom.NodeList;
 
 import HwpDoc.Exception.NotImplementedException;
 
-public class Ctrl_ShapeLine extends Ctrl_GeneralShape {
-	private static final Logger log = Logger.getLogger(Ctrl_ShapeLine.class.getName());
+public class Ctrl_ShapeCurve extends Ctrl_GeneralShape {
+	private static final Logger log = Logger.getLogger(Ctrl_ShapeCurve.class.getName());
 	private int size;
 	
-	// 선 개체 속성
-	public int		startX;	// 시작점 X 좌표
-	public int		startY;	// 시작점 Y 좌표
-	public int		endX;	// 끝점 X 좌표
-	public int		endY;	// 끝점 Y 좌표
-	public short	attr;	// 속성
+	// 타원 개체 속성
+	public int		nPoints;		// count of points
+	public Point[]	points;			// x,y 좌표 * n
+	public byte[]	segmentType;	// segment type (0:line, 1:curve)
 	
-	public Ctrl_ShapeLine(String ctrlId, int size, byte[] buf, int off, int version) {
+	public Ctrl_ShapeCurve(String ctrlId, int size, byte[] buf, int off, int version) {
 		super(ctrlId, size, buf, off, version);
 		this.size = offset-off;
 
 		log.fine("                                                  " + toString());
 	}
 	
-	public Ctrl_ShapeLine(Ctrl_GeneralShape shape) {
+	public Ctrl_ShapeCurve(Ctrl_GeneralShape shape) {
 		super(shape);
 		
 		this.size = shape.getSize();
 	}
-	
-	public Ctrl_ShapeLine(String ctrlId, Node node, int version) throws NotImplementedException {
-	    super(ctrlId, node, version);
-	    
-        NamedNodeMap attributes = node.getAttributes();
-        // 처음 생성 시 수직선 또는 수평선일때, 선의 방향이 언제나 오른쪽(위쪽)으로 잡힘으로 인한 현상때문에 방향을 바로 잡아주기 위한 속성
-        if (attributes.getNamedItem("isReverseHV")!=null) {
-            switch(attributes.getNamedItem("isReverseHV").getNodeValue()) {
-            case "0":
-                attr = 0;   break;
-            case "1":
-                attr = 1;   break;
-            }
-        }
+
+	public Ctrl_ShapeCurve(String ctrlId, Node node, int version) throws NotImplementedException {
+        super(ctrlId, node, version);
         
         String numStr;
-        
         NodeList nodeList = node.getChildNodes();
+        
+        points = new Point[nodeList.getLength()];
+        segmentType = new byte[nodeList.getLength()];
+        
         for (int i=0; i<nodeList.getLength(); i++) {
             Node child = nodeList.item(i);
+            NamedNodeMap childAttrs = child.getAttributes();
             switch(child.getNodeName()) {
-            case "hp:startPt":    // 시작점
-                {
-                    NamedNodeMap childAttrs = child.getAttributes();
-                    numStr = childAttrs.getNamedItem("x").getNodeValue();
-                    startX = Integer.parseInt(numStr);
-                    numStr = childAttrs.getNamedItem("y").getNodeValue();
-                    startY = Integer.parseInt(numStr);
+            case "hp:seg":   // 곡선 세그먼트
+                switch(childAttrs.getNamedItem("type").getNodeValue()) {    // 곡선 세그먼트 형식
+                case "CURVE":
+                    segmentType[i] = 1;     break;
+                case "LINE":
+                    segmentType[i] = 0;     break;
                 }
-                break;
-            case "hp:endPt":      // 끝점
-                {
-                    NamedNodeMap childAttrs = child.getAttributes();
-                    numStr = childAttrs.getNamedItem("x").getNodeValue();
-                    endX = Integer.parseInt(numStr);
-                    numStr = childAttrs.getNamedItem("y").getNodeValue();
-                    endY = Integer.parseInt(numStr);
-                }
+                points[i] = new Point();
+                numStr = childAttrs.getNamedItem("x1").getNodeValue();
+                points[i].x = Integer.parseInt(numStr);
+                numStr = childAttrs.getNamedItem("y1").getNodeValue();
+                points[i].y = Integer.parseInt(numStr);
+                // childAttrs.getNamedItem("x2").getNodeValue();
+                // childAttrs.getNamedItem("y2").getNodeValue();
                 break;
             }
         }

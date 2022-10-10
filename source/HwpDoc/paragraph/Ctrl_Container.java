@@ -35,6 +35,8 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import HwpDoc.Exception.NotImplementedException;
+
 public class Ctrl_Container extends Ctrl_GeneralShape {
 	private static final Logger log = Logger.getLogger(Ctrl_Container.class.getName());
 	private int size;
@@ -54,7 +56,7 @@ public class Ctrl_Container extends Ctrl_GeneralShape {
 		this.size = shape.getSize();
 	}
 
-    public Ctrl_Container(String ctrlId, Node node, int version) {
+    public Ctrl_Container(String ctrlId, Node node, int version) throws NotImplementedException {
         super(ctrlId, node, version);
         
         NodeList nodeList = node.getChildNodes();

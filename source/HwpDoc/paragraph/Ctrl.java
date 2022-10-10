@@ -27,7 +27,6 @@
  */
 package HwpDoc.paragraph;
 
-import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 
 import HwpDoc.Exception.NotImplementedException;
@@ -42,34 +41,34 @@ public abstract class Ctrl {
 		this.ctrlId = ctrlId;
 	}
 	
-	public abstract int getSize();
+    public abstract int getSize();
 	
-    public static Ctrl getCtrl(Node node) throws NotImplementedException {
+    public static Ctrl getCtrl(Node node, int version) throws NotImplementedException {
         Ctrl ctrl = null;
         switch(node.getNodeName()) {
         case "hp:colPr":
-            ctrl = new Ctrl_ColumnDef("dloc", node);
+            ctrl = new Ctrl_ColumnDef("dloc", node, version);
             break;
         case "hp:header":
-            ctrl = new Ctrl_HeadFoot("daeh", node, true);
+            ctrl = new Ctrl_HeadFoot("daeh", node, version);
             break;
         case "hp:footer":
-            ctrl = new Ctrl_HeadFoot("toof", node, false);
+            ctrl = new Ctrl_HeadFoot("toof", node, version);
             break;
         case "hp:footNote":
-            ctrl = new Ctrl_Note("  nf", node, true);
+            ctrl = new Ctrl_Note("  nf", node, version);
             break;
         case "hp:endNote":
-            ctrl = new Ctrl_Note("  ne", node, false);
+            ctrl = new Ctrl_Note("  ne", node, version);
             break;
         case "hp:autoNum":
-            ctrl = new Ctrl_AutoNumber("onta", node);
+            ctrl = new Ctrl_AutoNumber("onta", node, version);
             break;
         case "hp:newNum":
-            ctrl = new Ctrl_NewNumber("onwn", node);
+            ctrl = new Ctrl_NewNumber("onwn", node, version);
             break;
         case "hp:pageNum":
-            ctrl = new Ctrl_PageNumPos("pngp", node);
+            ctrl = new Ctrl_PageNumPos("pngp", node, version);
         case "hp:fieldBegin":
         case "hp:fieldEnd":
         case "hp:bookmark":

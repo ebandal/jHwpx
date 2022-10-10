@@ -58,7 +58,7 @@ public class Ctrl_NewNumber extends Ctrl {
 		this.size = offset-off;
 	}
 	
-	public Ctrl_NewNumber(String ctrlId, Node node) {
+	public Ctrl_NewNumber(String ctrlId, Node node, int version) {
 	    super(ctrlId);
 	    
         NamedNodeMap attributes = node.getAttributes();

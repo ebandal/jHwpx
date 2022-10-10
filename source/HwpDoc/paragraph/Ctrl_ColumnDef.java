@@ -96,23 +96,23 @@ public class Ctrl_ColumnDef extends Ctrl {
 		log.finest(toString());
 	}
 	
-	public Ctrl_ColumnDef(String ctrlId, Node node) throws NotImplementedException {
+	public Ctrl_ColumnDef(String ctrlId, Node node, int version) throws NotImplementedException {
         super(ctrlId);
         
         NamedNodeMap attributes = node.getAttributes();
         
         switch(attributes.getNamedItem("type").getNodeValue()) {
         case "NEWSPAPER":
+        case "BALANCED_NEWSPAPER":
+        case "PARALLEL":
             break;
-        default:
-            throw new NotImplementedException("Ctrl_ColumnDef");
         }
         
         switch(attributes.getNamedItem("layout").getNodeValue()) {
         case "LEFT":
+        case "RIGHT":
+        case "MIRROR":
             break;
-        default:
-            throw new NotImplementedException("Ctrl_ColumnDef");
         }
 
         String numStr = attributes.getNamedItem("colCount").getNodeValue();

@@ -35,69 +35,48 @@ import org.w3c.dom.NodeList;
 
 import HwpDoc.Exception.NotImplementedException;
 
-public class Ctrl_ShapeLine extends Ctrl_GeneralShape {
-	private static final Logger log = Logger.getLogger(Ctrl_ShapeLine.class.getName());
+public class Ctrl_ShapeVideo extends Ctrl_GeneralShape {
+	private static final Logger log = Logger.getLogger(Ctrl_ShapeVideo.class.getName());
 	private int size;
 	
-	// 선 개체 속성
-	public int		startX;	// 시작점 X 좌표
-	public int		startY;	// 시작점 Y 좌표
-	public int		endX;	// 끝점 X 좌표
-	public int		endY;	// 끝점 Y 좌표
-	public short	attr;	// 속성
-	
-	public Ctrl_ShapeLine(String ctrlId, int size, byte[] buf, int off, int version) {
+	public int			videoType;		// 동영상타입 (0:로컬동영상, 1:웹동영상)
+	public short		vidoeBinID;
+	public String 		webURL;			
+	public short		thumnailBinID;
+
+	public Ctrl_ShapeVideo(String ctrlId, int size, byte[] buf, int off, int version) {
 		super(ctrlId, size, buf, off, version);
 		this.size = offset-off;
 
 		log.fine("                                                  " + toString());
 	}
-	
-	public Ctrl_ShapeLine(Ctrl_GeneralShape shape) {
+
+	public Ctrl_ShapeVideo(Ctrl_GeneralShape shape) {
 		super(shape);
 		
 		this.size = shape.getSize();
 	}
-	
-	public Ctrl_ShapeLine(String ctrlId, Node node, int version) throws NotImplementedException {
-	    super(ctrlId, node, version);
-	    
+
+	public Ctrl_ShapeVideo(String ctrlId, Node node, int version) throws NotImplementedException {
+        super(ctrlId, node, version);
+        
         NamedNodeMap attributes = node.getAttributes();
-        // 처음 생성 시 수직선 또는 수평선일때, 선의 방향이 언제나 오른쪽(위쪽)으로 잡힘으로 인한 현상때문에 방향을 바로 잡아주기 위한 속성
-        if (attributes.getNamedItem("isReverseHV")!=null) {
-            switch(attributes.getNamedItem("isReverseHV").getNodeValue()) {
-            case "0":
-                attr = 0;   break;
-            case "1":
-                attr = 1;   break;
-            }
+        
+        switch(attributes.getNamedItem("type").getNodeValue()) {
+        case "VT_LOCAL":
+            videoType = 0;   break;
+        case "VT_WEB":
+            videoType = 1;   break;
         }
         
-        String numStr;
+        String numStr = attributes.getNamedItem("fileIDRef").getNodeValue();
+        vidoeBinID = (short) Integer.parseInt(numStr);
         
-        NodeList nodeList = node.getChildNodes();
-        for (int i=0; i<nodeList.getLength(); i++) {
-            Node child = nodeList.item(i);
-            switch(child.getNodeName()) {
-            case "hp:startPt":    // 시작점
-                {
-                    NamedNodeMap childAttrs = child.getAttributes();
-                    numStr = childAttrs.getNamedItem("x").getNodeValue();
-                    startX = Integer.parseInt(numStr);
-                    numStr = childAttrs.getNamedItem("y").getNodeValue();
-                    startY = Integer.parseInt(numStr);
-                }
-                break;
-            case "hp:endPt":      // 끝점
-                {
-                    NamedNodeMap childAttrs = child.getAttributes();
-                    numStr = childAttrs.getNamedItem("x").getNodeValue();
-                    endX = Integer.parseInt(numStr);
-                    numStr = childAttrs.getNamedItem("y").getNodeValue();
-                    endY = Integer.parseInt(numStr);
-                }
-                break;
-            }
+        numStr = attributes.getNamedItem("imageIDRef").getNodeValue();
+        thumnailBinID = (short) Integer.parseInt(numStr);
+        
+        if (videoType==1) {
+            webURL = attributes.getNamedItem("tag").getNodeValue();
         }
     }
 
