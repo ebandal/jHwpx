@@ -67,7 +67,7 @@ public class HwpxFile {
 	public	HwpFileHeader fileHeader;
 	public	int	version;
 	public	HwpDocInfo 	docInfo;
-	public	List<HwpxSection> sections;
+	public	List<HwpSection> sections;
 	
 	// Let's have member that are needed for showing in LibreOffice
 	public	List<DirectoryEntry> directoryBinData;
@@ -78,15 +78,15 @@ public class HwpxFile {
 		this.filename = filename;
 		owplmFile = new OwpmlFile(this.filename);
 		fileHeader = new HwpFileHeader();
-		docInfo = new HwpDocInfo();
-		sections = new ArrayList<HwpxSection>();
+		docInfo = new HwpDocInfo(this);
+		sections = new ArrayList<HwpSection>();
 	}
 
 	public OwpmlFile getOwpmlFile() {
 		return owplmFile;
 	}
 
-	public List<HwpxSection> getSections() {
+	public List<HwpSection> getSections() {
 	    return sections;
 	}
 	
@@ -216,10 +216,10 @@ public class HwpxFile {
 
         Document document = getDocument(name);
         
-        HwpxSection hwpxSection = new HwpxSection(this);
-        hwpxSection.read(document, version);
+        HwpSection hwpSection = new HwpSection(this);
+        hwpSection.read(document, version);
             
-        sections.add(hwpxSection);
+        sections.add(hwpSection);
         return true;
     }
 	
@@ -236,14 +236,19 @@ public class HwpxFile {
 	    owplmFile.close();
 	}
 	
-	public List<DirectoryEntry> getBinData() {
-		return directoryBinData;
+	public String findBinData(String shortName) {
+	    return owplmFile.getBinData(shortName);
 	}
 	
-	public void setBinData(List<DirectoryEntry> binData) {
-		this.directoryBinData = binData;
+	public byte[] getBinDataByIDRef(String shortName) throws IOException {
+	    String entry = owplmFile.getBinData(shortName);
+	    return owplmFile.getBytes(entry);
 	}
-	
+
+	public byte[] getBinDataByEntry(String entry) throws IOException {
+        return owplmFile.getBytes(entry);
+    }
+
 	public List<HwpParagraph> getParaList() {
 		return paraList;
 	}

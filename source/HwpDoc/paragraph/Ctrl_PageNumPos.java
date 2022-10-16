@@ -49,7 +49,11 @@ public class Ctrl_PageNumPos extends Ctrl {
 	public String		postfix;
 	public String		constantDash;
 	
-	public Ctrl_PageNumPos(String ctrlId, int size, byte[] buf, int off, int version) {
+    public Ctrl_PageNumPos(String ctrlId) {
+        super(ctrlId);
+    }
+
+    public Ctrl_PageNumPos(String ctrlId, int size, byte[] buf, int off, int version) {
 		super(ctrlId);
 		int offset 		= off;
 

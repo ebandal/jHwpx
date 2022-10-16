@@ -50,6 +50,10 @@ public class Ctrl_ColumnDef extends Ctrl {
 	public LineType2   colLineType;
 	public byte        colLineWidth;
 	public int         colLineColor;
+
+	public Ctrl_ColumnDef(String ctrlId) {
+	    super(ctrlId);
+	}
 	
 	public Ctrl_ColumnDef(String ctrlId, int size, byte[] buf, int off, int version) {
 		super(ctrlId);

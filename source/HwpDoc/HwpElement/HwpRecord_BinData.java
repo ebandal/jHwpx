@@ -33,6 +33,7 @@ import java.util.logging.Logger;
 
 import HwpDoc.HwpDocInfo;
 import HwpDoc.Exception.HwpParseException;
+import soffice.WriterContext.HanType;
 
 public class HwpRecord_BinData extends HwpRecord {
 	private static final Logger log = Logger.getLogger(HwpRecord_BinData.class.getName());
@@ -55,9 +56,11 @@ public class HwpRecord_BinData extends HwpRecord {
 		this(tagNum, level, size);
 		this.parent = docInfo;
 
-//		if (parent.getParentHwp().getBinData()==null) {
-//			parent.getParentHwp().setBinData(parent.getParentHwp().getOleFile().getChildEntries("BinData"));
-//		}
+		if (docInfo.hanType == HanType.HWP) {
+    		if (parent.getParentHwp().getBinData()==null) {
+    			parent.getParentHwp().setBinData(parent.getParentHwp().getOleFile().getChildEntries("BinData"));
+    		}
+		}
 		
 		int offset = off;
 		short typeBits = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);

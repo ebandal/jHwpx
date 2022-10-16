@@ -365,7 +365,9 @@ public class HwpRecord_CharShape extends HwpRecord {
             case "hh:underline":
                 {
                     NamedNodeMap childAttrs = child.getAttributes();
-                    underlineShape = LineType2.valueOf(childAttrs.getNamedItem("type").getNodeValue());
+                    underline = Underline.valueOf(childAttrs.getNamedItem("type").getNodeValue());
+                    
+                    underlineShape = LineType2.valueOf(childAttrs.getNamedItem("shape").getNodeValue());
                     
                     numStr = childAttrs.getNamedItem("color").getNodeValue().replaceAll("#", "");
                     underlineColor = (short)Integer.parseInt(numStr, 16);

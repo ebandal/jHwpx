@@ -43,6 +43,9 @@ public class Ctrl_AutoNumber extends Ctrl {
 	public NumberShape2	numShape;
 	public boolean		superscript;
 	
+    public Ctrl_AutoNumber(String ctrlId) {
+        super(ctrlId);
+    }
 	
 	public Ctrl_AutoNumber(String ctrlId, int size, byte[] buf, int off, int version) {
 		super(ctrlId);

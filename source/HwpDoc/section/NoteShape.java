@@ -31,6 +31,8 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.logging.Logger;
 
+import org.w3c.dom.Node;
+
 import HwpDoc.Exception.HwpParseException;
 import HwpDoc.Exception.NotImplementedException;
 import HwpDoc.HwpElement.HwpRecordTypes.LineType1;
@@ -56,7 +58,12 @@ public class NoteShape {
 	public byte				noteLineWidth;
 	public int				noteLineColor;
 
-	public static NoteShape parse(int level, int size, byte[] buf, int off, int version) throws HwpParseException, NotImplementedException {
+	public NoteShape() { }
+
+	public NoteShape(Node child, int version) {
+    }
+
+    public static NoteShape parse(int level, int size, byte[] buf, int off, int version) throws HwpParseException, NotImplementedException {
         int offset = off;
 
         NoteShape noteShape = new NoteShape();

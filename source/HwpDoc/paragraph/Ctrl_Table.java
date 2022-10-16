@@ -59,6 +59,10 @@ public class Ctrl_Table extends Ctrl_Common {
 	public List<CellZone> cellzoneList;	// 영역속성 (표 78 참조) (5.0.1.0 이상)
 	public List<TblCell> cells;
 		
+	public Ctrl_Table(String ctrlId) {
+       super(ctrlId);
+    }
+	
 	public Ctrl_Table(String ctrlId, int size, byte[] buf, int off, int version) {
 		super(ctrlId, size, buf, off, version);
 		this.size = offset-off;

@@ -27,8 +27,11 @@
  */
 package HwpDoc.paragraph;
 
+import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -37,8 +40,12 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import HwpDoc.HwpFile;
 import HwpDoc.Exception.HwpParseException;
 import HwpDoc.Exception.NotImplementedException;
+import HwpDoc.HwpElement.HwpRecord_BinData;
+import HwpDoc.HwpElement.HwpRecord_BinData.Compressed;
+import HwpDoc.HwpElement.HwpRecord_BinData.Type;
 import HwpDoc.paragraph.Ctrl_Table.CellZone;
 
 public class Ctrl_ShapePic extends Ctrl_GeneralShape {
@@ -57,7 +64,9 @@ public class Ctrl_ShapePic extends Ctrl_GeneralShape {
 	public byte			bright;			// 그림 밝기
 	public byte			contrast;		// 그림 명암
 	public byte			effect;			// 그림 효과 (0:REAL_PIC,1:GRAY_SCALE,2:BLACK_WHTE,4:PATTERN8x8
-	public short		binDataID;		// BinItem의 아이디 참조값
+	// public short		binDataID;		// BinItem의 아이디 참조값
+	public ImagePath    imagePath;      // BinItemID값 대신 문자열을 사용하도록 함 (hwpx)       
+	
 	public byte			borderOpaque;	// 테두리 투명도
 	public int			instanceID;		// 문서 내 각 개체에 대한 고유 아이디(instance ID)
 	public int			picEffectInfo;	// 그림효과정보(그림자,네온,부드러운,가장자리,반사)
@@ -210,7 +219,7 @@ public class Ctrl_ShapePic extends Ctrl_GeneralShape {
                     */
                 }
                 break;
-            case "hp:img":          // 그림 정보    51 page
+            case "hc:img":          // 그림 정보    51 page
                 {
                     NamedNodeMap childAttrs = child.getAttributes();
                     numStr = childAttrs.getNamedItem("bright").getNodeValue();   // 그림의 밝기
@@ -226,14 +235,18 @@ public class Ctrl_ShapePic extends Ctrl_GeneralShape {
                         effect = 2;    break;
                     }
                     numStr =  childAttrs.getNamedItem("binaryItemIDRef").getNodeValue();// BinDataItem 요소의 아이디 참조값
-                    binDataID = (short) Integer.parseInt(numStr);
+                    
+                    imagePath = new ImagePath();
+                    imagePath.path = numStr;
+                    imagePath.type = ImagePathType.OWPML;
+                    imagePath.compressed = Compressed.NO_COMPRESS;
                 }
                 break;
             }
         }
     }
 
-	public static int parseElement(Ctrl_ShapePic obj, int size, byte[] buf, int off, int version) throws HwpParseException, NotImplementedException {
+	public static int parseElement(Ctrl_ShapePic obj, int size, byte[] buf, int off, int version, HwpFile hwp) throws HwpParseException, NotImplementedException {
         int offset = off;
         
         obj.borderColor     = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
@@ -268,8 +281,22 @@ public class Ctrl_ShapePic extends Ctrl_GeneralShape {
         obj.contrast        = buf[offset++];
         obj.effect          = buf[offset++];
 
-        obj.binDataID       = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
+        short binDataID       = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
         offset += 2;
+
+        obj.imagePath = new ImagePath();
+        HwpRecord_BinData binData = (HwpRecord_BinData)hwp.getDocInfo().binDataList.get(binDataID-1);
+        if (binData.type==Type.LINK) {
+            obj.imagePath.compressed = binData.compressed;
+            obj.imagePath.type = ImagePathType.LINK;
+            obj.imagePath.path = binData.aPath;
+        } else {
+            if (hwp.getBinData().size() >= binData.binDataID) {
+                obj.imagePath.compressed = binData.compressed;
+                obj.imagePath.type = ImagePathType.COMPOUND;
+                obj.imagePath.path = String.format("BIN%04X.%s", binData.binDataID, binData.format);
+            }
+        }
         
         obj.borderOpaque    = buf[offset++];
         
@@ -756,5 +783,31 @@ public class Ctrl_ShapePic extends Ctrl_GeneralShape {
             }
             return null;
         }
+    }
+
+    public static enum ImagePathType {
+        COMPOUND    (0x0),
+        OWPML       (0x1),
+        LINK        (0x2);
+
+        private int type;
+        
+        private ImagePathType(int type) { 
+            this.type = type;
+        }
+
+        public static ImagePathType from(int type) {
+            for (ImagePathType typeNum: values()) {
+                if (typeNum.type == type)
+                    return typeNum;
+            }
+            return null;
+        }
+    }
+
+    public static class ImagePath {
+        public ImagePathType type;
+        public Compressed compressed;
+        public String path;
     }
 }

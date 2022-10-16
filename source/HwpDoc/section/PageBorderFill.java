@@ -53,22 +53,25 @@ public class PageBorderFill {
 	
 	public PageBorderFill(Node node) throws NotImplementedException {
         NamedNodeMap attributes = node.getAttributes();
+        
         switch(attributes.getNamedItem("type").getNodeValue()) {
-        case "0":
-        case "1":
+        case "BOTH":
             break;
-        default:
-            throw new NotImplementedException("pageBorderFill");
+        case "EVEN":
+            break;
+        case "ODD":
+            break;
         }
 
         String numStr = attributes.getNamedItem("borderFillIDRef").getNodeValue();
         borderFill = (short) Integer.parseInt(numStr);
 
         switch(attributes.getNamedItem("textBorder").getNodeValue()) {
-        case "0":
+        case "PAPER":
             textBorder = false; break;
-        case "1":
-            textBorder = true;  break;
+        default:
+            textBorder = true;
+            throw new NotImplementedException("pageBorderFill");
         }
 
         switch(attributes.getNamedItem("headerInside").getNodeValue()) {

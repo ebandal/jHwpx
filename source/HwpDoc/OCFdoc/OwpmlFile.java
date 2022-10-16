@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.zip.DataFormatException;
@@ -107,6 +108,11 @@ public class OwpmlFile {
         
         return new ByteArrayInputStream(buf);
     }
+    
+    public String findBinData(String shortName) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
     public byte[] getBytes(String entryName) throws IOException {
         Offset offset = offsetMap.get(entryName);
@@ -123,6 +129,12 @@ public class OwpmlFile {
         List<String> sections = offsetMap.keySet().stream().filter(s -> s.contains("section")).sorted().collect(Collectors.toList());
 
         return sections;
+    }
+    
+    public String getBinData(String shortName) {
+        Optional<String> binData = offsetMap.keySet().stream().filter(s -> s.startsWith("BinData"))
+                                                          .filter(s -> s.contains(shortName + ".")).findAny();
+        return binData.orElse("");
     }
     
     public void inflate2() throws DataFormatException {

@@ -77,6 +77,10 @@ public class Ctrl_SectionDef extends Ctrl {
 
 	public List<HwpParagraph>	paras;			// 바탕쪽
 	
+	public Ctrl_SectionDef(String ctrlId) {
+	    super(ctrlId);
+	}
+	
 	public Ctrl_SectionDef(String ctrlId, int size, byte[] buf, int off, int version) {
 		super(ctrlId);
 		
@@ -136,7 +140,7 @@ public class Ctrl_SectionDef extends Ctrl {
 		this.size = offset-off;
 	}
 	
-	public Ctrl_SectionDef(String ctrlId, Node node) throws NotImplementedException {
+	public Ctrl_SectionDef(String ctrlId, Node node, int version) throws NotImplementedException {
 	    super(ctrlId);
 	    
         HwpRecord.dumpNode(node, 1);
@@ -173,7 +177,7 @@ public class Ctrl_SectionDef extends Ctrl {
             Node child = nodeList.item(i);
             
             switch(child.getNodeName()) {
-            case "startNum":
+            case "hp:startNum":
                 {
                     NamedNodeMap childAttrs = child.getAttributes();
                     switch(childAttrs.getNamedItem("pageStartsOn").getNodeValue()) {// Both,Even,Odd
@@ -195,7 +199,7 @@ public class Ctrl_SectionDef extends Ctrl {
                     equation = (short) Integer.parseInt(numStr);
                 }
                 break;
-            case "grid":
+            case "hp:grid":
                 {
                     NamedNodeMap childAttrs = child.getAttributes();
                     // 세로로 줄맞춤을 할지 여부. 0:off, 1-n:간격을 hwpunit 단위로 지정
@@ -214,7 +218,7 @@ public class Ctrl_SectionDef extends Ctrl {
                     }
                 }
                 break;
-            case "visibility":
+            case "hp:visibility":
                 {
                     NamedNodeMap childAttrs = child.getAttributes();
                     switch(childAttrs.getNamedItem("hideFirstHeader").getNodeValue()) {
@@ -239,18 +243,26 @@ public class Ctrl_SectionDef extends Ctrl {
                     }
                     
                     switch(childAttrs.getNamedItem("border").getNodeValue()) {
-                    case "0":
-                    case "1":
-                        hideBorder = true;  showFirstBorder = true;    break;
+                    case "HIDE_FIRST":
+                        hideBorder = true;  showFirstBorder = false;    break;
+                    case "SHOW_FIRST":
+                        hideBorder = true;  showFirstBorder = false;    break;
+                    case "SHOW_ALL":
+                        hideBorder = false; showFirstBorder = false;    break;
                     }
                     
                     switch(childAttrs.getNamedItem("fill").getNodeValue()) {
-                    case "0":
-                    case "1":
+                    case "HIDE_FIRST":
+                        hideFill = true;  showFirstFill = false;  break;
+                    case "SHOW_FIRST":
                         hideFill = true;  showFirstFill = true;  break;
+                    case "SHOW_ALL":
+                        hideFill = false;  showFirstFill = true;  break;
                     }
 
-                    switch(childAttrs.getNamedItem("hideFirstPageNumber").getNodeValue()) {
+                    //childAttrs.getNamedItem("showLineNumber").getNodeValue()
+                            
+                    switch(childAttrs.getNamedItem("hideFirstPageNum").getNodeValue()) {
                     case "0":
                         hidePageNumPos = false;   break;
                     case "1":
@@ -265,19 +277,22 @@ public class Ctrl_SectionDef extends Ctrl {
                     }
                 }
                 break;
-            case "pagePr":
+            case "hp:pagePr":
                 {
                     page = new Page(child);
                 }
                 break;
-            case "footNotePr":
-            case "endNotePr":
+            case "hp:footNotePr":
+            case "hp:endNotePr":
                 {
-                    // NoteShape noteShape = new NoteShape(child);
-                    // noteShapes.add(noteShape);
-                    throw new NotImplementedException("footNote, endNote");
+                    if (noteShapes==null) {
+                        noteShapes = new ArrayList<>();
+                    }
+                    NoteShape noteShape = new NoteShape(child, version);
+                    noteShapes.add(noteShape);
                 }
-            case "pageBorderFill":
+                break;
+            case "hp:pageBorderFill":
                 {
                     if (borderFills==null) {
                         borderFills = new ArrayList<PageBorderFill>();
@@ -291,7 +306,9 @@ public class Ctrl_SectionDef extends Ctrl {
                     // childAttrs.getNamedItem("idRef").getNodeValue()
                 }
                 break;
-            case "presentation":
+            case "hp:presentation":
+            case "hp:parameterset":
+            case "hp:lineNumberShape":
                 break;
             }
         }

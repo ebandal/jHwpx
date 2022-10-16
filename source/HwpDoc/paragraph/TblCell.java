@@ -36,6 +36,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import HwpDoc.Exception.NotImplementedException;
+import HwpDoc.HwpElement.HwpRecord;
 import HwpDoc.paragraph.Ctrl_Common.VertAlign;
 import HwpDoc.paragraph.Ctrl_Table.CellZone;
 
@@ -196,6 +197,9 @@ public class TblCell {
                         Node grandChild = childNodeList.item(j);
                         switch(grandChild.getNodeName()) {
                         case "hp:p":
+                            
+                            HwpRecord.dumpNode(grandChild, 1);
+                            
                             CellParagraph cellP = new CellParagraph(grandChild, version);
                             paras.add(cellP);
                             break;

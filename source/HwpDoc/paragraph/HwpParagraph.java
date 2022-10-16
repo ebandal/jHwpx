@@ -28,6 +28,7 @@
 package HwpDoc.paragraph;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -50,9 +51,9 @@ public class HwpParagraph {
 	public List<RangeTag>	rangeTags;		// HWPTAG_PARA_RANGE_TAG
 	public List<Ctrl>		ctrls;
 
+	public LinkedList<Ctrl> p;             // ParaText + Ctrl_****
+	
 	public HwpParagraph() { }
-
-
 
 	public HwpParagraph(Node node, int version) throws NotImplementedException {
 
@@ -128,7 +129,7 @@ public class HwpParagraph {
 	    switch(node.getNodeName()) {
 	    case "hp:secPr":
     	    {
-    	        ctrl = new Ctrl_SectionDef("dces", node);
+    	        ctrl = new Ctrl_SectionDef("dces", node, version);
     	        ctrls.add(ctrl);
     	    }
     	    break;

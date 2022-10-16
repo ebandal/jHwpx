@@ -50,6 +50,10 @@ public class Ctrl_EqEdit extends Ctrl_GeneralShape {
 	public String		version;		// 수식 버전 정보
 	public String		font;			// 수식 폰트 이름
 	
+	public Ctrl_EqEdit(String ctrlId) {
+        super(ctrlId);
+    }
+
 	public Ctrl_EqEdit(String ctrlId, int size, byte[] buf, int off, int version) {
 		super(ctrlId, size, buf, off, version);
 		this.size = offset-off;
@@ -103,7 +107,7 @@ public class Ctrl_EqEdit extends Ctrl_GeneralShape {
         }
     }
 	
-	public static int parseElement(Ctrl_EqEdit obj, int size, byte[] buf, int off, int version) throws HwpParseException, NotImplementedException {
+    public static int parseElement(Ctrl_EqEdit obj, int size, byte[] buf, int off, int version) throws HwpParseException, NotImplementedException {
         int offset = off;
         
         obj.attr        = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;

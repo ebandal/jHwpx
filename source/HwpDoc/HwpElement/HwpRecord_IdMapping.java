@@ -61,8 +61,8 @@ public class HwpRecord_IdMapping extends HwpRecord {
 
 			switch(Index.from(i)) {
 			case BIN_DATA:
-//				if (parent.getParentHwp().getBinData()==null)
-//					parent.getParentHwp().setBinData(parent.getParentHwp().getOleFile().getChildEntries("BinData"));
+				if (parent.getParentHwp().getBinData()==null)
+					parent.getParentHwp().setBinData(parent.getParentHwp().getOleFile().getChildEntries("BinData"));
 				if (count > parent.getParentHwp().getBinData().size()) {
 					log.fine("BIN_DATA count mismatch");
 				}

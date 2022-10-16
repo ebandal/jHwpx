@@ -44,6 +44,10 @@ public class Ctrl_Note extends Ctrl {
 	
 	public List<HwpParagraph> paras;
 
+    public Ctrl_Note(String ctrlId) {
+        super(ctrlId);
+    }
+
 	public Ctrl_Note(String ctrlId, int size, byte[] buf, int off, int version) {
 		super(ctrlId);
 		
@@ -77,6 +81,7 @@ public class Ctrl_Note extends Ctrl {
             }
         }
     }
+
 
     public String toString() {
 		return "CTRL("+ctrlId+")";

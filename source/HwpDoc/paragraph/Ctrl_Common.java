@@ -81,7 +81,11 @@ public class Ctrl_Common extends Ctrl {
 	public Ctrl_Common() {
 		super();
 	}
-	
+
+	public Ctrl_Common(String ctrlId) {
+        super(ctrlId);
+    }
+
 	public Ctrl_Common(String ctrlId, int size, byte[] buf, int off, int version) {
 		super(ctrlId);
 		offset = off;

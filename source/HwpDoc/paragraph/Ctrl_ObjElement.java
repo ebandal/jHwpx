@@ -63,6 +63,10 @@ public class Ctrl_ObjElement extends Ctrl_Common {
 		super();
 	}
 
+	public Ctrl_ObjElement(String ctrlId) {
+        super(ctrlId);
+    }
+
 	public Ctrl_ObjElement(String ctrlId, int size, byte[] buf, int off, int version) {
 		super(ctrlId, size, buf, off, version);
 		this.size = offset-off;

@@ -68,6 +68,10 @@ public class Ctrl_GeneralShape extends Ctrl_ObjElement {
 		super();
 	}
 
+	public Ctrl_GeneralShape(String ctrlId) {
+        super(ctrlId);
+    }
+
 	public Ctrl_GeneralShape(String ctrlId, int size, byte[] buf, int off, int version) {
 		super(ctrlId, size, buf, off, version);
 		this.size = offset-off;
@@ -170,7 +174,7 @@ public class Ctrl_GeneralShape extends Ctrl_ObjElement {
     }
 
 
-	private void do_subList(Node node, int version) throws NotImplementedException {
+    private void do_subList(Node node, int version) throws NotImplementedException {
         if (paras==null) {
             paras = new ArrayList<HwpParagraph>();
         }

@@ -54,10 +54,13 @@ import HwpDoc.HwpElement.HwpRecord_Style;
 import HwpDoc.HwpElement.HwpRecord_TabDef;
 import HwpDoc.HwpElement.HwpTag;
 import HwpDoc.paragraph.Ctrl_PageNumPos.NumPos;
+import soffice.WriterContext.HanType;
 
 public class HwpDocInfo {
 	private static final Logger log = Logger.getLogger(HwpDocInfo.class.getName());
-	private HwpxFile parentHwpx;
+	public HanType         hanType;
+	private HwpxFile       parentHwpx;
+	private HwpFile        parentHwp;
 	public List<HwpRecord> recordList;
 	
 	public List<HwpRecord> binDataList;
@@ -71,7 +74,7 @@ public class HwpDocInfo {
 	public List<HwpRecord> tabDefList;
 	public CompatDoc       compatibleDoc;
 	
-    public HwpDocInfo() {
+    public HwpDocInfo(HanType hanType) {
         recordList      = new ArrayList<HwpRecord>();
         binDataList     = new ArrayList<HwpRecord>();
         faceNameList    = new ArrayList<HwpRecord>();
@@ -83,12 +86,18 @@ public class HwpDocInfo {
         styleList       = new ArrayList<HwpRecord>();
         tabDefList      = new ArrayList<HwpRecord>();
         compatibleDoc   = CompatDoc.HWP;
+        this.hanType    = hanType; 
     }
 
     public HwpDocInfo(HwpxFile parent) {
-        this();
+        this(HanType.HWPX);
 		this.parentHwpx = parent;
 	}
+    
+    public HwpDocInfo(HwpFile parent) {
+        this(HanType.HWP);
+        this.parentHwp = parent;
+    }
 	
 	boolean parse(byte[] buf, int version) throws HwpParseException, NotImplementedException {
 		int off = 0;
@@ -308,8 +317,8 @@ public class HwpDocInfo {
         return true;
     }
 
-	public HwpxFile getParentHwp() {
-		return parentHwpx;
+	public HwpFile getParentHwp() {
+		return parentHwp;
 	}
     
 	public static enum CompatDoc {

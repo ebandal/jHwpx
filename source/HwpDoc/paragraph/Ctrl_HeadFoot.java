@@ -54,6 +54,10 @@ public class Ctrl_HeadFoot extends Ctrl {
 	
 	public List<HwpParagraph> paras;
 	
+	public Ctrl_HeadFoot(String ctrlId) {
+	    super(ctrlId);
+	}
+	
 	public Ctrl_HeadFoot(String ctrlId, int size, byte[] buf, int off, int version, boolean isHeader) {
 		super(ctrlId);
 		

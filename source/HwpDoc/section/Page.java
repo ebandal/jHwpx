@@ -59,6 +59,8 @@ public class Page {
         switch(attributes.getNamedItem("landscape").getNodeValue()) {
         case "NARROWLY":
             landscape = false;  break;
+        case "WIDELY":
+            landscape = true;   break;
         default:
             throw new NotImplementedException("Page");
         }

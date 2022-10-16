@@ -44,6 +44,10 @@ public class Ctrl_NewNumber extends Ctrl {
 	public NumberShape2	numShape;
 	public short		num;
 	
+    public Ctrl_NewNumber(String ctrlId) {
+        super(ctrlId);
+    }
+
 	public Ctrl_NewNumber(String ctrlId, int size, byte[] buf, int off, int version) {
 		super(ctrlId);
 		
