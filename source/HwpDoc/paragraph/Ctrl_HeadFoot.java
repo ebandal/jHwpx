@@ -96,6 +96,7 @@ public class Ctrl_HeadFoot extends Ctrl {
 			log.fine("                                                  [CtrlId]=" + obj.ctrlId + "," + size + " bytes를 해석하지 못함.");
 			offset += (size-(offset-off));
 		}
+        obj.fullfilled = true;
 		
 		return offset-off;
 	}
@@ -124,10 +125,26 @@ public class Ctrl_HeadFoot extends Ctrl {
             case "subList":
                 {
                     NamedNodeMap childAttrs = child.getAttributes();
-                    throw new NotImplementedException("subList");
+                    
+                    NodeList childNodeList = child.getChildNodes();
+                    for (int j=0; j<childNodeList.getLength(); j++) {
+                        Node grandChild = childNodeList.item(j);
+                        switch(grandChild.getNodeName()) {
+                        case "p":
+                            HwpParagraph cellP = new HwpParagraph(grandChild, version);
+                            paras.add(cellP);
+                            break;
+                        default:
+                            throw new NotImplementedException("Ctrl_GeneralShape");
+                        }
+                    }
                 }
+                break;
+            default:
+                throw new NotImplementedException("Ctrl_GeneralShape");
             }
         }
+        this.fullfilled = true;
     }
 
 

@@ -28,7 +28,9 @@
 package HwpDoc;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -63,7 +65,7 @@ public class HwpDocInfo {
 	private HwpFile        parentHwp;
 	public List<HwpRecord> recordList;
 	
-	public List<HwpRecord> binDataList;
+	public Map<String, HwpRecord> binDataList;
 	public List<HwpRecord> faceNameList;
 	public List<HwpRecord> borderFillList;
 	public List<HwpRecord> charShapeList;
@@ -76,7 +78,7 @@ public class HwpDocInfo {
 	
     public HwpDocInfo(HanType hanType) {
         recordList      = new ArrayList<HwpRecord>();
-        binDataList     = new ArrayList<HwpRecord>();
+        binDataList     = new HashMap<String, HwpRecord>();
         faceNameList    = new ArrayList<HwpRecord>();
         borderFillList  = new ArrayList<HwpRecord>();
         charShapeList   = new ArrayList<HwpRecord>();
@@ -127,8 +129,8 @@ public class HwpDocInfo {
 				recordList.add(record);
 				break;
 			case HWPTAG_BIN_DATA:
-				record = new HwpRecord_BinData(this, tagNum, level, size, buf, off, version);
-				binDataList.add(record);
+			    HwpRecord_BinData binRecord = new HwpRecord_BinData(this, tagNum, level, size, buf, off, version);
+				binDataList.put(String.valueOf(binRecord.binDataID), binRecord);
 				break;
 			case HWPTAG_FACE_NAME:
 				record = new HwpRecord_FaceName(this, tagNum, level, size, buf, off, version);
@@ -183,15 +185,37 @@ public class HwpDocInfo {
 		return true;
 	}
 	
+	boolean readContentHpf(Document document, int version) throws HwpParseException, NotImplementedException {
+        Element element = document.getDocumentElement();
+        
+        NodeList nodeList = element.getChildNodes();
+        for (int i = 0; i < nodeList.getLength(); i++) {
+            Node node = nodeList.item(i);
+            
+            HwpRecord_BinData record = null;
+            switch(node.getNodeName()) {
+            case "opf:metadata":
+                break;
+            case "opf:manifest":
+                {
+                    NodeList children = node.getChildNodes();
+                    for (int j=0; j<children.getLength(); j++) {
+                        Node childNode = children.item(j);
+                        record = new HwpRecord_BinData(childNode, version);
+                        binDataList.put(record.itemId, record);
+                    }
+                }
+                break;
+            }
+        }
+        
+        return true;
+	}
+	
 	boolean read(Document document, int version) throws HwpParseException, NotImplementedException {
 	    int off = 0;
         
         Element element = document.getDocumentElement();
-        
-        System.out.println("LocalName="+element.getLocalName());
-        System.out.println("NodeName="+element.getNodeName());
-        System.out.println("Prefix="+element.getPrefix());
-        System.out.println("TagName="+element.getTagName());    
         
         // Node : [[hh:beginNum: null], [hh:refList: null], [hh:compatibleDocument: null], [hh:docOption: null], [hh:trackchageConfig: null]]
         
@@ -199,7 +223,6 @@ public class HwpDocInfo {
         for (int i = 0; i < nodeList.getLength(); i++) {
             Node node = nodeList.item(i);
             
-            System.out.println("NodeName="+node.getNodeName());
             HwpRecord record = null;
             switch(node.getNodeName()) {
             case "hh:beginNum":

@@ -29,6 +29,7 @@ package HwpDoc.paragraph;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.logging.Logger;
 
 import org.w3c.dom.NamedNodeMap;
@@ -40,6 +41,7 @@ import HwpDoc.Exception.NotImplementedException;
 import HwpDoc.HwpElement.HwpRecordTypes.LineType2;
 import HwpDoc.HwpElement.HwpRecord_BorderFill;
 import HwpDoc.HwpElement.HwpRecord_BorderFill.Fill;
+import HwpDoc.paragraph.Ctrl_Character.CtrlCharType;
 
 public class Ctrl_GeneralShape extends Ctrl_ObjElement {
 	private static final Logger log = Logger.getLogger(Ctrl_GeneralShape.class.getName());
@@ -155,6 +157,8 @@ public class Ctrl_GeneralShape extends Ctrl_ObjElement {
                         case "hp:subList":
                             do_subList(grandChild, version);
                             break;
+                        default:
+                            throw new NotImplementedException("Ctrl_GeneralShape");
                         }
                     }
                 }
@@ -169,6 +173,71 @@ public class Ctrl_GeneralShape extends Ctrl_ObjElement {
                 childAttrs.getNamedItem("alpha").getNodeValue();
                 */
                 break;
+            case "hp:offset":
+                
+                break;
+            case "hp:orgSz":
+                
+                break;
+            case "hp:curSz":
+                
+                break;
+            case "hp:flip":
+                
+                break;
+            case "hp:rotationInfo":
+                
+                break;
+            case "hp:renderingInfo":
+                
+                break;
+            case "hc:fillBrush":
+                
+                break;
+            case "hc:pt0":
+                
+                break;
+            case "hc:pt1":
+                
+                break;
+            case "hc:pt2":
+                
+                break;
+            case "hc:pt3":
+                
+                break;
+            case "hp:sz":
+                
+                break;
+            case "hp:pos":
+                
+                break;
+            case "hp:outMargin":
+                
+                break;
+            case "hp:imgRect":
+                
+                break;
+            case "hp:imgClip":
+                
+                break;
+            case "hp:inMargin":
+                
+                break;
+            case "hp:imgDim":
+                
+                break;
+            case "hc:img":
+                
+                break;
+            case "hp:effects":
+                
+                break;
+            case "hp:shapeComment":
+                
+                break;
+            default:
+                throw new NotImplementedException("Ctrl_GeneralShape");
             }
         }
     }
@@ -179,13 +248,28 @@ public class Ctrl_GeneralShape extends Ctrl_ObjElement {
             paras = new ArrayList<HwpParagraph>();
         }
         NodeList nodeList = node.getChildNodes();
-        for (int i=0; i<nodeList.getLength(); i++) {
+        int nodeLength = nodeList.getLength();
+        for (int i=0; i<nodeLength; i++) {
             Node child = nodeList.item(i);
+            Ctrl lastCtrl = null;
             switch(child.getNodeName()) {
             case "hp:p":
                 HwpParagraph p = new HwpParagraph(child, version);
                 paras.add(p);
+                lastCtrl = (p.p==null ? null : p.p.getLast());
                 break;
+            }
+        
+            // ParaBreak를 subList 중간에 하나씩 강제로 넣는다. Paragraph 단위로 다음줄에 써지도록
+            if (lastCtrl != null && lastCtrl instanceof ParaText) {
+                HwpParagraph breakP = new HwpParagraph(child, version);
+                if (breakP.p != null) {
+                    breakP.p.clear();
+                } else {
+                    breakP.p = new LinkedList<Ctrl>();
+                }
+                breakP.p.add(new Ctrl_Character("  _", CtrlCharType.PARAGRAPH_BREAK));
+                paras.add(breakP);
             }
         }
 	}

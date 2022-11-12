@@ -202,6 +202,23 @@ public class HwpRecord_ParaText extends HwpRecord {
 		return paras;
 	}
 	
+	public static String getText(int tagNum, int level, int size, byte[] buf, int off, int version) throws HwpParseException {
+        int offset = off;
+        
+        String text = new String(buf, offset, size, StandardCharsets.UTF_16LE);
+        offset += size;
+
+        String readable = toReadableString(text);
+        log.fine("                                                  "+readable);
+
+        if (offset-off-size != 0) {
+            log.fine("[TAG]=" + tagNum + ", size=" + size + ", but currentSize=" + (offset-off));
+            dump(buf, off, size);
+            throw new HwpParseException();
+        }
+        return text;
+    }
+	
 	private static String toReadableString(String text) {
 		StringBuffer sb = new StringBuffer();
 		char extendChar = 0;

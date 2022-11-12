@@ -36,22 +36,23 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import com.sun.star.text.ControlCharacter;
+
 import HwpDoc.Exception.HwpParseException;
 import HwpDoc.Exception.NotImplementedException;
+import HwpDoc.paragraph.Ctrl_Character.CtrlCharType;
 
 public class HwpParagraph {
     private static final Logger log = Logger.getLogger(HwpParagraph.class.getName());
 
-	public String	 		paraText;		// HWPTAG_PARA_TEXT
 	public short			paraShapeID;	// HWPTAG_PARA_HEADER
 	public short			paraStyleID;	// HWPTAG_PARA_HEADER
 	public byte 			breakType;		// HWPTAG_PARA_HEADER
 	public List<CharShape>	charShapes;		// HWPTAG_PARA_CHAR_SHAPE
 	public LineSeg			lineSegs;		// HWPTAG_PARA_LINE_SEG
 	public List<RangeTag>	rangeTags;		// HWPTAG_PARA_RANGE_TAG
-	public List<Ctrl>		ctrls;
 
-	public LinkedList<Ctrl> p;             // ParaText + Ctrl_****
+	public LinkedList<Ctrl> p;              // HWPTAG_PARA_TEXT + List<Ctrl>  V2
 	
 	public HwpParagraph() { }
 
@@ -73,6 +74,8 @@ public class HwpParagraph {
             breakType &= 0b11111011;   break;      // 0:구역나누기, 2:다단나누기, 4:쪽 나누기, 8:단 나누기
         case "1":
             breakType |= 0b00000100;   break;
+        default:
+            throw new NotImplementedException("HwpParagraph");
         }
 
         switch(attributes.getNamedItem("columnBreak").getNodeValue()) {
@@ -80,6 +83,8 @@ public class HwpParagraph {
             breakType &= 0b11110111;   break;      // 0:구역나누기, 2:다단나누기, 4:쪽 나누기, 8:단 나누기
         case "1":
             breakType |= 0b00001000;   break;
+        default:
+            throw new NotImplementedException("HwpParagraph");
         }
 
         // attributes.getNamedItem("merged").getNodeValue();
@@ -107,20 +112,23 @@ public class HwpParagraph {
                     NodeList childNodeList = child.getChildNodes();
                     for (int j=0; j<childNodeList.getLength(); j++) {
                         Node grandChild = childNodeList.item(j);
-                        recursive_HwpParagraph(grandChild, version);
+                        parseHwpParagraph(grandChild, version);
                     }
                 }
                 break;
             case "hp:linesegarray":
                 break;
+            default:
+                throw new NotImplementedException("HwpParagraph");
             }
         }
+        
 	}
 	
-	private void recursive_HwpParagraph(Node node, int version) throws NotImplementedException {
+	private void parseHwpParagraph(Node node, int version) throws NotImplementedException {
 
-        if (ctrls == null) {
-            ctrls = new ArrayList<Ctrl>();
+        if (p == null) {
+            p = new LinkedList<Ctrl>();
         }
 
         String numStr;
@@ -130,7 +138,7 @@ public class HwpParagraph {
 	    case "hp:secPr":
     	    {
     	        ctrl = new Ctrl_SectionDef("dces", node, version);
-    	        ctrls.add(ctrl);
+    	        p.add(ctrl);
     	    }
     	    break;
 	    case "hp:ctrl":
@@ -139,7 +147,7 @@ public class HwpParagraph {
                 for (int j=0; j<nodeList.getLength(); j++) {
                     Node child = nodeList.item(j);
                     ctrl = Ctrl.getCtrl(child, version);
-                    ctrls.add(ctrl);
+                    p.add(ctrl);
                 }
     	    }
     	    break;
@@ -158,84 +166,88 @@ public class HwpParagraph {
                 }
                 
                 NodeList nodeList = node.getChildNodes();
-                for (int j=0; j<nodeList.getLength(); j++) {
-                    Node child = nodeList.item(j);
-                    switch(child.getNodeName()) {
-                    case "#text":
-                        paraText = child.getNodeValue();    
-                        break;
-                    case "markpenBegin":    // 134 page
-                    case "markpenEnd":
-                    case "titleMark":
-                    case "tab":
-                    case "lineBreak":
-                    case "hyphen":
-                    case "nbSpace":
-                    case "fwSpace":
-                    case "insertBegin":
-                    case "insertEnd":
-                    case "deleteBegin":
-                    case "deleteEnd":
-                        throw new NotImplementedException("hp:t");
+                if (nodeList.getLength() == 0) {
+                    p.add(new Ctrl_Character("  _", CtrlCharType.HARD_SPACE));
+                } else {
+                    for (int j=0; j<nodeList.getLength(); j++) {
+                        Node child = nodeList.item(j);
+                        switch(child.getNodeName()) {
+                        case "#text":
+                            p.add(new ParaText("___", child.getNodeValue(), 0));
+                            break;
+                        case "markpenBegin":    // 134 page
+                        case "markpenEnd":
+                        case "titleMark":
+                        case "tab":
+                        case "lineBreak":
+                        case "hyphen":
+                        case "nbSpace":
+                        case "fwSpace":
+                        case "insertBegin":
+                        case "insertEnd":
+                        case "deleteBegin":
+                        case "deleteEnd":
+                            throw new NotImplementedException("hp:t");
+                        }
                     }
                 }
             }
             break;
 	    case "hp:tbl":
 	        ctrl = new Ctrl_Table(" lbt" , node, version);
-            ctrls.add(ctrl);
+            p.add(ctrl);
             break;
 	    case "hp:pic":
 	        ctrl = new Ctrl_ShapePic("cip$", node, version);
-	        ctrls.add(ctrl);
+            p.add(ctrl);
 	        break;
 	    case "hp:container":
 	        ctrl = new Ctrl_Container("noc$", node, version);
-	        ctrls.add(ctrl);
+            p.add(ctrl);
 	        break;
 	    case "hp:ole":
 	        ctrl = new Ctrl_ShapeOle("elo$", node, version);
-	        ctrls.add(ctrl);
+            p.add(ctrl);
 	        break;
 	    case "hp:equation":
 	        ctrl = new Ctrl_EqEdit("deqe", node, version);
-	        ctrls.add(ctrl);
+            p.add(ctrl);
 	        break;
 	    case "hp:line":
 	        ctrl = new Ctrl_ShapeLine("nil$", node, version);
-	        ctrls.add(ctrl);
+            p.add(ctrl);
 	        break;
 	    case "hp:rect":
 	        ctrl = new Ctrl_ShapeRect("cer$", node, version);
-	        ctrls.add(ctrl);
+            p.add(ctrl);
 	        break;
 	    case "hp:ellipse":
 	        ctrl = new Ctrl_ShapeEllipse("lle$", node, version);
-	        ctrls.add(ctrl);
+            p.add(ctrl);
 	        break;
 	    case "hp:arc":
 	        ctrl = new Ctrl_ShapeArc("cra$", node, version);
-	        ctrls.add(ctrl);
+            p.add(ctrl);
 	        break;
 	    case "hp:polygon":
 	        ctrl = new Ctrl_ShapePolygon("lop$", node, version);
-	        ctrls.add(ctrl);
+            p.add(ctrl);
 	        break;
 	    case "hp:curve":
 	        ctrl = new Ctrl_ShapeCurve("ruc$", node, version);
-	        ctrls.add(ctrl);
+            p.add(ctrl);
 	        break;
 	    case "hp:connectLine":
 	        ctrl = new Ctrl_ShapeConnectLine("loc$", node, version);
-	        ctrls.add(ctrl);
+            p.add(ctrl);
 	        break;
 	    case "hp:textart":
 	        ctrl = new Ctrl_ShapeTextArt("tat$", node, version);
-	        ctrls.add(ctrl);
+            p.add(ctrl);
 	        break;
         case "hp:video":
             ctrl = new Ctrl_ShapeVideo("div$", node, version);
-            ctrls.add(ctrl);
+            p.add(ctrl);
             break;
 	    case "hp:compose":
 	    case "hp:dutmal":
@@ -248,7 +260,7 @@ public class HwpParagraph {
 	    case "hp:scrollBar":
 	        break;
         default:
-            throw new NotImplementedException("recusive_HwpPargraph");
+            throw new NotImplementedException("parseHwpPargraph");
 	    }
 	}
 

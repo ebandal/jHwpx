@@ -69,6 +69,8 @@ public class Ctrl_ShapeVideo extends Ctrl_GeneralShape {
             videoType = 0;   break;
         case "VT_WEB":
             videoType = 1;   break;
+        default:
+            throw new NotImplementedException("Ctrl_ShapeVideo");
         }
         
         String numStr = attributes.getNamedItem("fileIDRef").getNodeValue();

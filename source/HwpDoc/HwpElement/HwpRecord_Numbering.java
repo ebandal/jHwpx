@@ -215,7 +215,6 @@ public class HwpRecord_Numbering extends HwpRecord {
                 }
             }
         }
-        
     }
 
     public static class ParaHeadInfo {

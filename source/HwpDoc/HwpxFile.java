@@ -209,7 +209,11 @@ public class HwpxFile {
 	}
 	
 	public boolean getDocInfo(int version) throws IOException, DataFormatException, ParserConfigurationException, SAXException, HwpParseException, NotImplementedException {
-		return docInfo.read(getDocument("Contents/header.xml"), version);
+	    if (docInfo.readContentHpf(getDocument("Contents/content.hpf"), version)) {
+	        return docInfo.read(getDocument("Contents/header.xml"), version);
+	    } else {
+	        return false;
+	    }
 	}
 	
     public boolean readSection(String name, int version) throws IOException, DataFormatException, ParserConfigurationException, SAXException, NotImplementedException {

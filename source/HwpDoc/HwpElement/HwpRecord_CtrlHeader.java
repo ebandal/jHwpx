@@ -115,6 +115,7 @@ public class HwpRecord_CtrlHeader extends HwpRecord {
 				ctrl = new Ctrl(ctrlId) {	public int getSize() { return tmpSize; }	};
 				ctrl.ctrlId = ctrlId;
 				offset += ctrl.getSize();
+				ctrl.fullfilled = true;
 			}
 			log.fine("Known ctrlID="+ctrlId+", but is not implemented. Just skipping...");
 			break;
@@ -129,19 +130,23 @@ public class HwpRecord_CtrlHeader extends HwpRecord {
 				ctrl = new Ctrl(ctrlId) {	public int getSize() { return tmpSize; }	};
 				ctrl.ctrlId = ctrlId;
 				offset += ctrl.getSize();
+				ctrl.fullfilled = true;
 			}
 			break;
 		case "klc%":	// FIELD_CLICKHERE
 			ctrl = new Ctrl_Click(ctrlId, size-(offset-off), buf, offset, version);
 			offset += ctrl.getSize();
+			ctrl.fullfilled = true;
 			break;
 		case "mrof":	// 양식개체
 			ctrl = new Ctrl_Form(ctrlId, size-(offset-off), buf, offset, version);
 			offset += ctrl.getSize();
+            ctrl.fullfilled = true;
 			break;
 		case "pngp":	// 쪽 번호 위치
 			ctrl = new Ctrl_PageNumPos(ctrlId, size-(offset-off), buf, offset, version);
 			offset += ctrl.getSize();
+            ctrl.fullfilled = true;
 			break;
 		case "klh%":	// hyperlink
 		case "frx%":	// FIELD_CROSSREF
@@ -164,6 +169,7 @@ public class HwpRecord_CtrlHeader extends HwpRecord {
 				ctrl = new Ctrl(ctrlId) {	public int getSize() { return tmpSize; }	};
 				ctrl.ctrlId = ctrlId;
 				offset += ctrl.getSize();
+	            ctrl.fullfilled = true;
 			}
 			log.fine("Known ctrlID="+ctrlId+", but is not implemented. Just skipping...");
 			break;

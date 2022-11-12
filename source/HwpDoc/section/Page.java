@@ -60,7 +60,7 @@ public class Page {
         case "NARROWLY":
             landscape = false;  break;
         case "WIDELY":
-            landscape = true;   break;
+            landscape = true;   break;      // 세로인데, 왜 WIDELY로 되어 있지?
         default:
             throw new NotImplementedException("Page");
         }
@@ -71,6 +71,11 @@ public class Page {
         numStr = attributes.getNamedItem("height").getNodeValue();
         height = Integer.parseInt(numStr);
 
+        // 세로인데, landscape=WIDELY 값이면 길이를 비교해서 정정해주는 방법밖에 없음.
+        if (height > width) {
+            landscape = false;
+        }
+        
         switch(attributes.getNamedItem("gutterType").getNodeValue()) {
         case "LEFT_ONELY":
             gutterType = 0; break;
@@ -85,7 +90,7 @@ public class Page {
             Node child = nodeList.item(i);
             
             switch(child.getNodeName()) {
-            case "margin":
+            case "hp:margin":
                 {
                     NamedNodeMap childAttrs = child.getAttributes();
                     numStr = childAttrs.getNamedItem("left").getNodeValue();

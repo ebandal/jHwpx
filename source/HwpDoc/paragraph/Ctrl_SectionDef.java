@@ -138,6 +138,7 @@ public class Ctrl_SectionDef extends Ctrl {
 			
 		}
 		this.size = offset-off;
+		this.fullfilled = true;
 	}
 	
 	public Ctrl_SectionDef(String ctrlId, Node node, int version) throws NotImplementedException {
@@ -187,6 +188,8 @@ public class Ctrl_SectionDef extends Ctrl {
                         pageStartOn = 1;   break;
                     case "ODD":
                         pageStartOn = 2;   break;
+                    default:
+                        throw new NotImplementedException("Ctrl_SectionDef");
                     }
                     
                     numStr = childAttrs.getNamedItem("page").getNodeValue();
@@ -226,6 +229,8 @@ public class Ctrl_SectionDef extends Ctrl {
                         hideHeader = false;   break;
                     case "1":
                         hideHeader = true;   break;
+                    default:
+                        throw new NotImplementedException("Ctrl_SectionDef");
                     }
 
                     switch(childAttrs.getNamedItem("hideFirstFooter").getNodeValue()) {
@@ -233,6 +238,8 @@ public class Ctrl_SectionDef extends Ctrl {
                         hideFooter = false;   break;
                     case "1":
                         hideFooter = true;   break;
+                    default:
+                        throw new NotImplementedException("Ctrl_SectionDef");
                     }
 
                     switch(childAttrs.getNamedItem("hideFirstMasterPage").getNodeValue()) {
@@ -240,6 +247,8 @@ public class Ctrl_SectionDef extends Ctrl {
                         hideMasterPage = false;   break;
                     case "1":
                         hideMasterPage = true;   break;
+                    default:
+                        throw new NotImplementedException("Ctrl_SectionDef");
                     }
                     
                     switch(childAttrs.getNamedItem("border").getNodeValue()) {
@@ -249,6 +258,8 @@ public class Ctrl_SectionDef extends Ctrl {
                         hideBorder = true;  showFirstBorder = false;    break;
                     case "SHOW_ALL":
                         hideBorder = false; showFirstBorder = false;    break;
+                    default:
+                        throw new NotImplementedException("Ctrl_SectionDef");
                     }
                     
                     switch(childAttrs.getNamedItem("fill").getNodeValue()) {
@@ -258,6 +269,8 @@ public class Ctrl_SectionDef extends Ctrl {
                         hideFill = true;  showFirstFill = true;  break;
                     case "SHOW_ALL":
                         hideFill = false;  showFirstFill = true;  break;
+                    default:
+                        throw new NotImplementedException("Ctrl_SectionDef");
                     }
 
                     //childAttrs.getNamedItem("showLineNumber").getNodeValue()
@@ -267,6 +280,8 @@ public class Ctrl_SectionDef extends Ctrl {
                         hidePageNumPos = false;   break;
                     case "1":
                         hidePageNumPos = true;   break;
+                    default:
+                        throw new NotImplementedException("Ctrl_SectionDef");
                     }
                     
                     switch(childAttrs.getNamedItem("hideFirstEmptyLine").getNodeValue()) {
@@ -274,6 +289,8 @@ public class Ctrl_SectionDef extends Ctrl {
                         hideEmptyLine = false;   break;
                     case "1":
                         hideEmptyLine = true;   break;
+                    default:
+                        throw new NotImplementedException("Ctrl_SectionDef");
                     }
                 }
                 break;
@@ -310,8 +327,11 @@ public class Ctrl_SectionDef extends Ctrl {
             case "hp:parameterset":
             case "hp:lineNumberShape":
                 break;
+            default:
+                throw new NotImplementedException("Ctrl_SectionDef");
             }
         }
+        this.fullfilled = true;
 	}
 
 	public String toString(int attr) {

@@ -97,6 +97,8 @@ public class Ctrl_ShapeConnectLine extends Ctrl_GeneralShape {
                     endPt.subjectIdx = (short) Integer.parseInt(numStr);
                 }
                 break;
+            default:
+                throw new NotImplementedException("Ctrl_ShapeConnectLine");
             }
         }
     }

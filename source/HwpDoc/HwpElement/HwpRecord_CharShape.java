@@ -198,12 +198,12 @@ public class HwpRecord_CharShape extends HwpRecord {
             textColor = (int) Long.parseLong(numStr, 16);      // RGBColor (0xRRGGBB) 값으로 저장
         }
 
-        shadowColor = 0xFFFFFF;
-        if (attributes.getNamedItem("shadowColor") != null) {
-            numStr = attributes.getNamedItem("shadowColor").getNodeValue();
+        shadeColor = 0xFFFFFFFF;
+        if (attributes.getNamedItem("shadeColor") != null) {
+            numStr = attributes.getNamedItem("shadeColor").getNodeValue();
             if (!numStr.equals("none")) {
                 numStr = numStr.replaceAll("#", "");
-                shadowColor = (int) Long.parseLong(numStr, 16);      // RGBColor (0xRRGGBB) 값으로 저장
+                shadeColor = (int) Long.parseLong(numStr, 16);      // RGBColor (0xRRGGBB) 값으로 저장
             }
         }
         
@@ -392,13 +392,15 @@ public class HwpRecord_CharShape extends HwpRecord {
                 {
                     NamedNodeMap childAttrs = child.getAttributes();
                     switch(childAttrs.getNamedItem("type").getNodeValue()) {
+                    case "NONE":
+                        shadow = Shadow.NONE;       break;
                     case "DROP":
                         shadow = Shadow.DISCRETE;   break;
                     case "CONTINUOUS":
                         shadow = Shadow.CONTINUOUS; break;
                     }
                     numStr = childAttrs.getNamedItem("color").getNodeValue().replaceAll("#", "");
-                    shadowColor = (short)Integer.parseInt(numStr, 16);
+                    shadowColor = (int)Integer.parseInt(numStr, 16);
                     
                     numStr = childAttrs.getNamedItem("offsetX").getNodeValue();
                     shadowOffsetX = (byte)Integer.parseInt(numStr);

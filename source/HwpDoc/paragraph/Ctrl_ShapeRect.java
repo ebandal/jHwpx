@@ -75,34 +75,75 @@ public class Ctrl_ShapeRect extends Ctrl_GeneralShape {
             Node child = nodeList.item(i);
             NamedNodeMap childAttrs = child.getAttributes();
             switch(child.getNodeName()) {
-            case "hp:pt0":  // 첫번째 좌표
+            case "hc:pt0":  // 첫번째 좌표
                 points[0] = new Point();
                 numStr = childAttrs.getNamedItem("x").getNodeValue();
                 points[0].x = Integer.parseInt(numStr);
                 numStr = childAttrs.getNamedItem("y").getNodeValue();
                 points[0].y = Integer.parseInt(numStr);
                 break;
-            case "hp:pt1":  // 두번째 좌표
+            case "hc:pt1":  // 두번째 좌표
                 points[1] = new Point();
                 numStr = childAttrs.getNamedItem("x").getNodeValue();
                 points[1].x = Integer.parseInt(numStr);
                 numStr = childAttrs.getNamedItem("y").getNodeValue();
                 points[1].y = Integer.parseInt(numStr);
                 break;
-            case "hp:pt2":  // 세번째 좌표
+            case "hc:pt2":  // 세번째 좌표
                 points[2] = new Point();
                 numStr = childAttrs.getNamedItem("x").getNodeValue();
                 points[2].x = Integer.parseInt(numStr);
                 numStr = childAttrs.getNamedItem("y").getNodeValue();
                 points[2].y = Integer.parseInt(numStr);
                 break;
-            case "hp:pt3":  // 네번째 좌표
+            case "hc:pt3":  // 네번째 좌표
                 points[3] = new Point();
                 numStr = childAttrs.getNamedItem("x").getNodeValue();
                 points[3].x = Integer.parseInt(numStr);
                 numStr = childAttrs.getNamedItem("y").getNodeValue();
                 points[3].y = Integer.parseInt(numStr);
                 break;
+            case "hp:offset":
+                
+                break;
+            case "hp:orgSz":
+                
+                break;
+            case "hp:curSz":
+                
+                break;
+            case "hp:flip":
+                
+                break;
+            case "hp:rotationInfo":
+                
+                break;
+            case "hp:renderingInfo":
+                
+                break;
+            case "hp:lineShape":
+                
+                break;
+            case "hc:fillBrush":
+                
+                break;
+            case "hp:shadow":
+                
+                break;
+            case "hp:drawText":
+                
+                break;
+            case "hp:sz":
+                
+                break;
+            case "hp:pos":
+                
+                break;
+            case "hp:outMargin":
+                
+                break;
+            default:
+                throw new NotImplementedException("Ctrl_ShapeRect");
             }
         }
     }

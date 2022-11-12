@@ -332,7 +332,7 @@ public class HwpRecord_ParaShape extends HwpRecord {
                 }
                 
                 numStr = childAttrs.getNamedItem("value").getNodeValue();
-                lineSpacing = (byte)Integer.parseInt(numStr);
+                lineSpacing = Integer.parseInt(numStr);
             }
             break;
         case "hh:border":
@@ -390,35 +390,35 @@ public class HwpRecord_ParaShape extends HwpRecord {
             {
                 NamedNodeMap childAttrs = child.getAttributes();
                 numStr = childAttrs.getNamedItem("value").getNodeValue();
-                indent = (byte)Integer.parseInt(numStr);
+                indent = Integer.parseInt(numStr);
             }
             break;
         case "hc:left":
             {
                 NamedNodeMap childAttrs = child.getAttributes();
                 numStr = childAttrs.getNamedItem("value").getNodeValue();
-                marginLeft = (byte)Integer.parseInt(numStr);
+                marginLeft = Integer.parseInt(numStr);
             }
             break;
         case "hc:right":
             {
                 NamedNodeMap childAttrs = child.getAttributes();
                 numStr = childAttrs.getNamedItem("value").getNodeValue();
-                marginRight = (byte)Integer.parseInt(numStr);
+                marginRight = Integer.parseInt(numStr);
             }
             break;
         case "hc:prev":
             {
                 NamedNodeMap childAttrs = child.getAttributes();
                 numStr = childAttrs.getNamedItem("value").getNodeValue();
-                marginPrev = (byte)Integer.parseInt(numStr);
+                marginPrev = Integer.parseInt(numStr);
             }
             break;
         case "hc:next":
             {
                 NamedNodeMap childAttrs = child.getAttributes();
                 numStr = childAttrs.getNamedItem("value").getNodeValue();
-                marginNext = (byte)Integer.parseInt(numStr);
+                marginNext = Integer.parseInt(numStr);
             }
             break;
         case "hp:switch":

@@ -78,6 +78,8 @@ public class Ctrl_ShapePolygon extends Ctrl_GeneralShape {
                 numStr = childAttrs.getNamedItem("y").getNodeValue();
                 points[i].y = Integer.parseInt(numStr);
                 break;
+            default:
+                throw new NotImplementedException("Ctrl_ShapePolygon");
             }
         }
     }

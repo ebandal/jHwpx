@@ -84,6 +84,7 @@ public class Ctrl_Common extends Ctrl {
 
 	public Ctrl_Common(String ctrlId) {
         super(ctrlId);
+        textVerAlign = VertAlign.TOP;
     }
 
 	public Ctrl_Common(String ctrlId, int size, byte[] buf, int off, int version) {
@@ -174,7 +175,7 @@ public class Ctrl_Common extends Ctrl {
 	}
 	
 	public Ctrl_Common(String ctrlId, Node node, int version) throws NotImplementedException {
-	    super(ctrlId);
+	    this(ctrlId);
 	    
         NamedNodeMap attributes = node.getAttributes();
         
@@ -190,50 +191,69 @@ public class Ctrl_Common extends Ctrl {
             default:
                 throw new NotImplementedException("Ctrl_Common");
             }
+            attributes.removeNamedItem("pageBreak");
         }
 
-        switch(attributes.getNamedItem("textFlow").getNodeValue()) {
-        case "BOTH_SIDES":  // 0:양쪽, 1:왼쪽, 2:오른쪽, 3:큰쪽
-            wrapText = 0;   break; 
-        case "LEFT_ONLY":
-            wrapText = 1;   break; 
-        case "RIGHT_ONLY":
-            wrapText = 2;   break; 
-        case "LARGEST_ONLY":
-            wrapText = 3;   break; 
+        if (attributes.getNamedItem("textFlow")!=null) {
+            switch(attributes.getNamedItem("textFlow").getNodeValue()) {
+            case "BOTH_SIDES":  // 0:양쪽, 1:왼쪽, 2:오른쪽, 3:큰쪽
+                wrapText = 0;   break; 
+            case "LEFT_ONLY":
+                wrapText = 1;   break; 
+            case "RIGHT_ONLY":
+                wrapText = 2;   break; 
+            case "LARGEST_ONLY":
+                wrapText = 3;   break; 
+            default:
+                throw new NotImplementedException("Ctrl_Common");
+            }
+            attributes.removeNamedItem("textFlow");
         }
 
-        switch(attributes.getNamedItem("textWrap").getNodeValue()) {
-        case "SQUARE":              // bound rect를 따라
-            wrapStyle = 0;  break;
-        case "TIGHT":               // 오브젝트의 outline을 따라
-            wrapStyle = 1;  break;
-        case "THROUGH":             // 오브젝트 내부의 빈 공간까지
-            wrapStyle = 2;  break;
-        case "TOP_AND_BOTTOM":      // 좌, 우에는 텍스트를 배치하지 않음.
-            wrapStyle = 3;  break;
-        case "BEHIND_TEXT":         // 글과 겹치게 하여 글 뒤로
-            wrapStyle = 4;  break;
-        case "IN_FRONT_OF_TEXT":    // 글과 겹치게 하여 글 앞으로
-            wrapStyle = 5;  break;
+        if (attributes.getNamedItem("textWrap")!=null) {
+            switch(attributes.getNamedItem("textWrap").getNodeValue()) {
+            case "SQUARE":              // bound rect를 따라
+                wrapStyle = 0;  break;
+            case "TIGHT":               // 오브젝트의 outline을 따라
+                wrapStyle = 1;  break;
+            case "THROUGH":             // 오브젝트 내부의 빈 공간까지
+                wrapStyle = 2;  break;
+            case "TOP_AND_BOTTOM":      // 좌, 우에는 텍스트를 배치하지 않음.
+                wrapStyle = 3;  break;
+            case "BEHIND_TEXT":         // 글과 겹치게 하여 글 뒤로
+                wrapStyle = 4;  break;
+            case "IN_FRONT_OF_TEXT":    // 글과 겹치게 하여 글 앞으로
+                wrapStyle = 5;  break;
+            default:
+                throw new NotImplementedException("Ctrl_Common");
+            }
+            attributes.removeNamedItem("textWrap");
         }
 
-        numStr = attributes.getNamedItem("zOrder").getNodeValue();
-        zOrder = Integer.parseInt(numStr);
+        if (attributes.getNamedItem("zOrder")!=null) {
+            numStr = attributes.getNamedItem("zOrder").getNodeValue();
+            zOrder = Integer.parseInt(numStr);
+            attributes.removeNamedItem("zOrder");
+        }
 
-        switch(attributes.getNamedItem("numberingType").getNodeValue()) {
-        case "NONE":
-            numberingType = 0;  break;
-        case "FIGURE":
-            numberingType = 1;  break;
-        case "TABLE":
-            numberingType = 2;  break;
-        case "EQUATION":
-            numberingType = 3;  break;
+        if (attributes.getNamedItem("numberingType")!=null) {
+            switch(attributes.getNamedItem("numberingType").getNodeValue()) {
+            case "NONE":
+                numberingType = 0;  break;
+            case "PICTURE":
+                numberingType = 1;  break;
+            case "TABLE":
+                numberingType = 2;  break;
+            case "EQUATION":
+                numberingType = 3;  break;
+            default:
+                throw new NotImplementedException("Ctrl_Common");
+            }
+            attributes.removeNamedItem("numberingType");
         }
 
         NodeList nodeList = node.getChildNodes();
-        for (int i=0; i<nodeList.getLength(); i++) {
+        for (int i=nodeList.getLength()-1; i>=0; i--) {
             Node child = nodeList.item(i);
             switch(child.getNodeName()) {
             case "hp:sz":
@@ -246,6 +266,7 @@ public class Ctrl_Common extends Ctrl {
                     height = (short) Integer.parseInt(numStr);
                     heightRelto = HeightRelTo.valueOf(childAttrs.getNamedItem("heightRelTo").getNodeValue());
                     // childAttrs.getNamedItem("protect").getNodeValue();
+                    node.removeChild(child);
                 }
                 break;
             case "hp:pos":
@@ -256,6 +277,8 @@ public class Ctrl_Common extends Ctrl {
                         treatAsChar = false;    break;
                     case "1":
                         treatAsChar = true;     break;
+                    default:
+                        throw new NotImplementedException("Ctrl_Common");
                     }
                     
                     if (treatAsChar) {
@@ -264,6 +287,8 @@ public class Ctrl_Common extends Ctrl {
                             affectLSpacing = false; break;
                         case "1":
                             affectLSpacing = true;  break;
+                        default:
+                            throw new NotImplementedException("Ctrl_Common");
                         }
                     } else {
                         switch(childAttrs.getNamedItem("allowOverlap").getNodeValue()) {
@@ -271,11 +296,13 @@ public class Ctrl_Common extends Ctrl {
                             allowOverlap = false; break;
                         case "1":
                             allowOverlap = true;  break;
+                        default:
+                            throw new NotImplementedException("Ctrl_Common");
                         }
-                        
-                        vertRelTo = VRelTo.valueOf(childAttrs.getNamedItem("vertRelTo").getNodeValue());
-                        horzRelTo = HRelTo.valueOf(childAttrs.getNamedItem("horzRelTo").getNodeValue());
                     }
+                    
+                    vertRelTo = VRelTo.valueOf(childAttrs.getNamedItem("vertRelTo").getNodeValue());
+                    horzRelTo = HRelTo.valueOf(childAttrs.getNamedItem("horzRelTo").getNodeValue());
                     
                     if (vertRelTo==VRelTo.PARA) {
                         switch(childAttrs.getNamedItem("flowWithText").getNodeValue()) {
@@ -283,6 +310,8 @@ public class Ctrl_Common extends Ctrl {
                             flowWithText = false; break;
                         case "1":
                             flowWithText = true;  break;
+                        default:
+                            throw new NotImplementedException("Ctrl_Common");
                         }
                     }
 
@@ -296,6 +325,7 @@ public class Ctrl_Common extends Ctrl {
 
                     numStr = childAttrs.getNamedItem("horzOffset").getNodeValue();
                     horzOffset = Integer.parseInt(numStr);
+                    node.removeChild(child);
                 }
                 break;
             case "hp:outMargin":
@@ -312,10 +342,15 @@ public class Ctrl_Common extends Ctrl {
                     outMargin[2] = (short) Integer.parseInt(numStr);
                     numStr = childAttrs.getNamedItem("bottom").getNodeValue();
                     outMargin[3] = (short) Integer.parseInt(numStr);
+                    node.removeChild(child);
                 }
+                break;
+            case "hp:inMargin":
+                
                 break;
             case "hp:caption":
                 setCaption(child, version);
+                node.removeChild(child);
                 break;
             case "hp:shapeComment":
                 break;
@@ -334,6 +369,8 @@ public class Ctrl_Common extends Ctrl {
             captionAttr = 0b10;      break;
         case "BOTTOM":
             captionAttr = 0b11;      break;
+        default:
+            throw new NotImplementedException("setCaption");
         }
 
         switch(attrs.getNamedItem("fullSize").getNodeValue()) {
@@ -341,6 +378,8 @@ public class Ctrl_Common extends Ctrl {
             break;
         case "1":
             captionAttr |= 0b100;    break;
+        default:
+            throw new NotImplementedException("setCaption");
         }
 
         String numStr = attrs.getNamedItem("width").getNodeValue();
@@ -382,6 +421,8 @@ public class Ctrl_Common extends Ctrl {
                     }
                 }
                 break;
+            default:
+                throw new NotImplementedException("setCaption");
             }
         }
 	}
@@ -588,7 +629,7 @@ public class Ctrl_Common extends Ctrl {
                if (type.num == num)
                    return type;
            }
-           return null;
+           return TOP;
        }
    }
 
@@ -608,7 +649,7 @@ public class Ctrl_Common extends Ctrl {
                 if (type.num == num)
                     return type;
             }
-            return null;
+            return LEFT;
         }
     }
 

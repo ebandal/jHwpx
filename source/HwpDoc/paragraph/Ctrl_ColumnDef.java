@@ -96,6 +96,7 @@ public class Ctrl_ColumnDef extends Ctrl {
 		log.fine("                                                  " + toString());
 
 		this.size = offset-off;
+		this.fullfilled = true;
 		
 		log.finest(toString());
 	}
@@ -110,6 +111,8 @@ public class Ctrl_ColumnDef extends Ctrl {
         case "BALANCED_NEWSPAPER":
         case "PARALLEL":
             break;
+        default:
+            throw new NotImplementedException("Ctrl_ColumnDef");
         }
         
         switch(attributes.getNamedItem("layout").getNodeValue()) {
@@ -117,6 +120,8 @@ public class Ctrl_ColumnDef extends Ctrl {
         case "RIGHT":
         case "MIRROR":
             break;
+        default:
+            throw new NotImplementedException("Ctrl_ColumnDef");
         }
 
         String numStr = attributes.getNamedItem("colCount").getNodeValue();
@@ -220,8 +225,11 @@ public class Ctrl_ColumnDef extends Ctrl {
                     colSzIdx++;
                 }
                 break;
+            default:
+                throw new NotImplementedException("Ctrl_ColumnDef");
             }
         }
+        this.fullfilled = true;
     }
 
     public String toString() {

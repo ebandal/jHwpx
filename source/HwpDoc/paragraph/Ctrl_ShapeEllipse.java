@@ -83,6 +83,8 @@ public class Ctrl_ShapeEllipse extends Ctrl_GeneralShape {
             intervalDirty = false;      break;
         case "1":
             intervalDirty = true;       break;
+        default:
+            throw new NotImplementedException("Ctrl_ShapeEllipse");
         };
         // 호로 바뀌었는지 여부
         switch(attributes.getNamedItem("hasArcProperty").getNodeValue()) {
@@ -90,6 +92,8 @@ public class Ctrl_ShapeEllipse extends Ctrl_GeneralShape {
             intervalDirty = false;      break;
         case "1":
             intervalDirty = true;       break;
+        default:
+            throw new NotImplementedException("Ctrl_ShapeEllipse");
         };
         // 호의 종류
         arcType = ArcType.valueOf(attributes.getNamedItem("arcType").getNodeValue());
@@ -143,6 +147,8 @@ public class Ctrl_ShapeEllipse extends Ctrl_GeneralShape {
                 numStr = childAttrs.getNamedItem("y").getNodeValue();
                 endY2 = Integer.parseInt(numStr);
                 break;
+            default:
+                throw new NotImplementedException("Ctrl_ShapeEllipse");
             }
         }
     }

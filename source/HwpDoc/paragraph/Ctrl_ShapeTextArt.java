@@ -137,11 +137,14 @@ public class Ctrl_ShapeTextArt extends Ctrl_GeneralShape {
                         outline[j].x = Integer.parseInt(numStr);
                         numStr = grandAttrs.getNamedItem("y").getNodeValue();
                         outline[j].y = Integer.parseInt(numStr);
+                        break;
+                    default:
+                        throw new NotImplementedException("Ctrl_ShapeRect");
                     }
-                    break;
                 }
-
                 break;
+            default:
+                throw new NotImplementedException("Ctrl_ShapeRect");
             }
         }
     }

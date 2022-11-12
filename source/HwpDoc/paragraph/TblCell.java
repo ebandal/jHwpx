@@ -28,6 +28,7 @@
 package HwpDoc.paragraph;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -37,6 +38,7 @@ import org.w3c.dom.NodeList;
 
 import HwpDoc.Exception.NotImplementedException;
 import HwpDoc.HwpElement.HwpRecord;
+import HwpDoc.paragraph.Ctrl_Character.CtrlCharType;
 import HwpDoc.paragraph.Ctrl_Common.VertAlign;
 import HwpDoc.paragraph.Ctrl_Table.CellZone;
 
@@ -108,59 +110,29 @@ public class TblCell {
             switch(child.getNodeName()) {
             case "hp:cellAddr":
                 {
-                    NodeList childNodeList = child.getChildNodes();
-                    for (int j=0; j<childNodeList.getLength(); j++) {
-                        Node grandChild = childNodeList.item(j);
-                        
-                        switch(grandChild.getNodeName()) {
-                        case "colAddr":
-                            numStr = grandChild.getNodeValue();
-                            colAddr = (short)Integer.parseInt(numStr);
-                            break;
-                        case "rowAddr":
-                            numStr = grandChild.getNodeValue();
-                            rowAddr = (short)Integer.parseInt(numStr);
-                            break;
-                        }
-                    }
+                    NamedNodeMap childAttrs = child.getAttributes();
+                    numStr = childAttrs.getNamedItem("colAddr").getNodeValue();
+                    colAddr = (short) Integer.parseInt(numStr);
+                    numStr = childAttrs.getNamedItem("rowAddr").getNodeValue();
+                    rowAddr = (short) Integer.parseInt(numStr);
                 }
                 break;
             case "hp:cellSpan":
                 {
-                    NodeList childNodeList = child.getChildNodes();
-                    for (int j=0; j<childNodeList.getLength(); j++) {
-                        Node grandChild = childNodeList.item(j);
-                        
-                        switch(grandChild.getNodeName()) {
-                        case "colSpan":
-                            numStr = grandChild.getNodeValue();
-                            colSpan = (short)Integer.parseInt(numStr);
-                            break;
-                        case "rowSpan":
-                            numStr = grandChild.getNodeValue();
-                            rowSpan = (short)Integer.parseInt(numStr);
-                            break;
-                        }
-                    }
+                    NamedNodeMap childAttrs = child.getAttributes();
+                    numStr = childAttrs.getNamedItem("colSpan").getNodeValue();
+                    colSpan = (short) Integer.parseInt(numStr);
+                    numStr = childAttrs.getNamedItem("rowSpan").getNodeValue();
+                    rowSpan = (short) Integer.parseInt(numStr);
                 }
                 break;
             case "hp:cellSz":
                 {
-                    NodeList childNodeList = child.getChildNodes();
-                    for (int j=0; j<childNodeList.getLength(); j++) {
-                        Node grandChild = childNodeList.item(j);
-                        
-                        switch(grandChild.getNodeName()) {
-                        case "width":
-                            numStr = grandChild.getNodeValue();
-                            width = Integer.parseInt(numStr);
-                            break;
-                        case "height":
-                            numStr = grandChild.getNodeValue();
-                            height = Integer.parseInt(numStr);
-                            break;
-                        }
-                    }
+                    NamedNodeMap childAttrs = child.getAttributes();
+                    numStr = childAttrs.getNamedItem("width").getNodeValue();
+                    width = Integer.parseInt(numStr);
+                    numStr = childAttrs.getNamedItem("height").getNodeValue();
+                    height = Integer.parseInt(numStr);
                 }
                 break;
             case "hp:cellMargin":
@@ -195,18 +167,34 @@ public class TblCell {
                     NodeList childNodeList = child.getChildNodes();
                     for (int j=0; j<childNodeList.getLength(); j++) {
                         Node grandChild = childNodeList.item(j);
+                        Ctrl lastCtrl = null;
                         switch(grandChild.getNodeName()) {
                         case "hp:p":
-                            
-                            HwpRecord.dumpNode(grandChild, 1);
-                            
+                            // HwpRecord.dumpNode(grandChild, 1);
                             CellParagraph cellP = new CellParagraph(grandChild, version);
                             paras.add(cellP);
+                            lastCtrl = (cellP.p==null ? null : cellP.p.getLast());
                             break;
+                        default:
+                            throw new NotImplementedException("TblCell");
+                        }
+                        
+                        // ParaBreak를 subList 중간에 하나씩 강제로 넣는다. Paragraph 단위로 다음줄에 써지도록
+                        if (lastCtrl != null && lastCtrl instanceof ParaText) {
+                            CellParagraph breakP = new CellParagraph(grandChild, version);
+                            if (breakP.p!=null) {
+                                breakP.p.clear();
+                            } else {
+                                breakP.p = new LinkedList<Ctrl>();
+                            }
+                            breakP.p.add(new Ctrl_Character("  _", CtrlCharType.PARAGRAPH_BREAK));
+                            paras.add(breakP);
                         }
                     }
                 }
                 break;
+            default:
+                throw new NotImplementedException("TblCell");
             }
         }
 

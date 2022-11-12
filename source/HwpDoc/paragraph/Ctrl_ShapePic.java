@@ -120,38 +120,41 @@ public class Ctrl_ShapePic extends Ctrl_GeneralShape {
             case "hp:imgRect":      // 이미지 좌표 정보
                 {
                     NodeList childNodeList = child.getChildNodes();
+                    borderPoints = new Point[4];
                     for (int j=0; j<childNodeList.getLength(); j++) {
                         Node grandChild = childNodeList.item(j);
                         NamedNodeMap childAttrs = grandChild.getAttributes();
                         switch(grandChild.getNodeName()) {
-                        case "hp:pt0":  // 첫번째 좌표
+                        case "hc:pt0":  // 첫번째 좌표
                             borderPoints[0] = new Point();
                             numStr = childAttrs.getNamedItem("x").getNodeValue();
                             borderPoints[0].x = Integer.parseInt(numStr);
                             numStr = childAttrs.getNamedItem("y").getNodeValue();
                             borderPoints[0].y = Integer.parseInt(numStr);
                             break;
-                        case "hp:pt1":  // 두번째 좌표
+                        case "hc:pt1":  // 두번째 좌표
                             borderPoints[1] = new Point();
                             numStr = childAttrs.getNamedItem("x").getNodeValue();
                             borderPoints[1].x = Integer.parseInt(numStr);
                             numStr = childAttrs.getNamedItem("y").getNodeValue();
                             borderPoints[1].y = Integer.parseInt(numStr);
                             break;
-                        case "hp:pt2":  // 세번째 좌표
+                        case "hc:pt2":  // 세번째 좌표
                             borderPoints[2] = new Point();
                             numStr = childAttrs.getNamedItem("x").getNodeValue();
                             borderPoints[2].x = Integer.parseInt(numStr);
                             numStr = childAttrs.getNamedItem("y").getNodeValue();
                             borderPoints[2].y = Integer.parseInt(numStr);
                             break;
-                        case "hp:pt3":  // 네번째 좌표
+                        case "hc:pt3":  // 네번째 좌표
                             borderPoints[3] = new Point();
                             numStr = childAttrs.getNamedItem("x").getNodeValue();
                             borderPoints[3].x = Integer.parseInt(numStr);
                             numStr = childAttrs.getNamedItem("y").getNodeValue();
                             borderPoints[3].y = Integer.parseInt(numStr);
                             break;
+                        default:
+                            throw new NotImplementedException("Ctrl_ShapePic");
                         }
                     }
                 }
@@ -204,6 +207,8 @@ public class Ctrl_ShapePic extends Ctrl_GeneralShape {
                                 picEffect.add(effect);
                             }
                             break;
+                        default:
+                            throw new NotImplementedException("Ctrl_ShapePic");
                         }
                     }
                 }
@@ -233,6 +238,8 @@ public class Ctrl_ShapePic extends Ctrl_GeneralShape {
                         effect = 1;    break;
                     case "BLACK_WHITE":
                         effect = 2;    break;
+                    default:
+                        throw new NotImplementedException("Ctrl_ShapePic");
                     }
                     numStr =  childAttrs.getNamedItem("binaryItemIDRef").getNodeValue();// BinDataItem 요소의 아이디 참조값
                     
@@ -242,6 +249,41 @@ public class Ctrl_ShapePic extends Ctrl_GeneralShape {
                     imagePath.compressed = Compressed.NO_COMPRESS;
                 }
                 break;
+            case "hp:offset":
+                
+                break;
+            case "hp:orgSz":
+                
+                break;
+            case "hp:curSz":
+                
+                break;
+            case "hp:flip":
+                
+                break;
+            case "hp:rotationInfo":
+                
+                break;
+            case "hp:renderingInfo":
+                
+                break;
+            case "hp:imgDim":
+                
+                break;
+            case "hp:sz":
+                
+                break;
+            case "hp:pos":
+                
+                break;
+            case "hp:outMargin":
+                
+                break;
+            case "hp:shapeComment":
+                
+                break;
+            default:
+                throw new NotImplementedException("Ctrl_ShapePic");
             }
         }
     }
@@ -284,17 +326,19 @@ public class Ctrl_ShapePic extends Ctrl_GeneralShape {
         short binDataID       = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
         offset += 2;
 
-        obj.imagePath = new ImagePath();
-        HwpRecord_BinData binData = (HwpRecord_BinData)hwp.getDocInfo().binDataList.get(binDataID-1);
-        if (binData.type==Type.LINK) {
-            obj.imagePath.compressed = binData.compressed;
-            obj.imagePath.type = ImagePathType.LINK;
-            obj.imagePath.path = binData.aPath;
-        } else {
-            if (hwp.getBinData().size() >= binData.binDataID) {
+        HwpRecord_BinData binData = (HwpRecord_BinData)hwp.getDocInfo().binDataList.get(String.valueOf(binDataID));
+        if (binData != null) {
+            obj.imagePath = new ImagePath();
+            if (binData.type==Type.LINK) {
                 obj.imagePath.compressed = binData.compressed;
-                obj.imagePath.type = ImagePathType.COMPOUND;
-                obj.imagePath.path = String.format("BIN%04X.%s", binData.binDataID, binData.format);
+                obj.imagePath.type = ImagePathType.LINK;
+                obj.imagePath.path = binData.aPath;
+            } else {
+                if (hwp.getBinData().size() >= binData.binDataID) {
+                    obj.imagePath.compressed = binData.compressed;
+                    obj.imagePath.type = ImagePathType.COMPOUND;
+                    obj.imagePath.path = String.format("BIN%04X.%s", binData.binDataID, binData.format);
+                }
             }
         }
         

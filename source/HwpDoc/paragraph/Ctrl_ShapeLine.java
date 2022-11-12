@@ -98,6 +98,8 @@ public class Ctrl_ShapeLine extends Ctrl_GeneralShape {
                     endY = Integer.parseInt(numStr);
                 }
                 break;
+            default:
+                throw new NotImplementedException("Ctrl_ShapeLine");
             }
         }
     }

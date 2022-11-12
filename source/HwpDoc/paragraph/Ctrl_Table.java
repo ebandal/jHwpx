@@ -39,6 +39,7 @@ import org.w3c.dom.NodeList;
 
 import HwpDoc.Exception.HwpParseException;
 import HwpDoc.Exception.NotImplementedException;
+import HwpDoc.HwpElement.HwpRecord;
 import HwpDoc.HwpElement.HwpRecordTypes.LineType2;
 
 public class Ctrl_Table extends Ctrl_Common {
@@ -58,7 +59,8 @@ public class Ctrl_Table extends Ctrl_Common {
 	public short validZoneSize;        // Valid Zone Info Size(5.0.1.0 이상)
 	public List<CellZone> cellzoneList;	// 영역속성 (표 78 참조) (5.0.1.0 이상)
 	public List<TblCell> cells;
-		
+
+	   
 	public Ctrl_Table(String ctrlId) {
        super(ctrlId);
     }
@@ -74,43 +76,58 @@ public class Ctrl_Table extends Ctrl_Common {
 	    super(ctrlId, node, version);
 	    
         NamedNodeMap attributes = node.getAttributes();
-                
-        switch(attributes.getNamedItem("pageBreak").getNodeValue()) {
-        case "TABLE":
-        case "CELL":
-        case "NONE":
-            break;
-        default:
-            throw new NotImplementedException("Ctrl_Table");
+        
+        // attributes 중 처리 안된 것들을 알아보기 위해.. 임시로 코드 넣음
+        List<String> nodeNames = new ArrayList<>();
+        for (int i=0; i < attributes.getLength(); i++) {
+            nodeNames.add(attributes.item(i).getNodeName());
         }
         
+        //repeatHeader="1"
         switch(attributes.getNamedItem("repeatHeader").getNodeValue()) {
         case "0":
         case "1":
             break;
-        default:
-            throw new NotImplementedException("Ctrl_Table");
         }
+        nodeNames.remove("repeatHeader");
 
+        //rowCnt="12"
         String numStr = attributes.getNamedItem("rowCnt").getNodeValue();
         nRows = (short) Integer.parseInt(numStr);
+        nodeNames.remove("rowCnt");
 
+        //noAdjust="1"
         switch(attributes.getNamedItem("noAdjust").getNodeValue()) {
         case "0":
         case "1":
             break;
-        default:
-            throw new NotImplementedException("Ctrl_Table");
         }
+        nodeNames.remove("noAdjust");
 
+        //colCnt="31"
         numStr = attributes.getNamedItem("colCnt").getNodeValue();
         nCols = (short) Integer.parseInt(numStr);
+        nodeNames.remove("colCnt");
 
+        //cellSpacing="0"
         numStr = attributes.getNamedItem("cellSpacing").getNodeValue();
         cellSpacing = (short) Integer.parseInt(numStr);
+        nodeNames.remove("cellSpacing");
         
+        //borderFillIDRef="3"
         numStr = attributes.getNamedItem("borderFillIDRef").getNodeValue();
         borderFillID = (short) Integer.parseInt(numStr);
+        nodeNames.remove("borderFillIDRef");
+
+        //dropcapstyle="None"
+        
+        //id="1905325604"
+        
+        //lock="0"
+        
+        for (String leftover: nodeNames) {
+            log.info("LeftOver: " + leftover);
+        }
         
         NodeList nodeList = node.getChildNodes();
         for (int i=0; i<nodeList.getLength(); i++) {
@@ -152,6 +169,8 @@ public class Ctrl_Table extends Ctrl_Common {
                             cellzone.borderFillIDRef = (short)Integer.parseInt(numStr);
                             cellzoneList.add(cellzone);
                             break;
+                        default:
+                            throw new NotImplementedException("Ctrl_Table");
                         }
                     }
                 }
@@ -170,14 +189,19 @@ public class Ctrl_Table extends Ctrl_Common {
                             TblCell cell = new TblCell(grandChild, version);
                             cells.add(cell);
                             break;
+                        default:
+                            throw new NotImplementedException("Ctrl_Table");
                         }
                     }
                 }
                 break;
             case "hp:label":
                 break;
+            default:
+                throw new NotImplementedException("Ctrl_Table");
             }
         }
+        this.fullfilled = true;
     }
 
    public static int parseCtrl(Ctrl_Table table, int size, byte[] buf, int off, int version) throws HwpParseException {
@@ -239,6 +263,7 @@ public class Ctrl_Table extends Ctrl_Common {
             log.fine("[Ctrl]= lbt, size=" + size + ", but currentSize=" + (offset-off));
             // dump(buf, off, size);
         }
+        table.fullfilled = true;
         
         return offset-off;
     }

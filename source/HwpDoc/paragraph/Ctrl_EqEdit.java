@@ -103,8 +103,11 @@ public class Ctrl_EqEdit extends Ctrl_GeneralShape {
             case "hp:script":    // 수식내용
                 eqn = child.getNodeValue();
                 break;
+            default:
+                throw new NotImplementedException("EqEdit");
             }
         }
+        this.fullfilled = true;
     }
 	
     public static int parseElement(Ctrl_EqEdit obj, int size, byte[] buf, int off, int version) throws HwpParseException, NotImplementedException {
@@ -143,7 +146,8 @@ public class Ctrl_EqEdit extends Ctrl_GeneralShape {
             log.fine("[CtrlId]=" + obj.ctrlId + ", size=" + size + ", but currentSize=" + (offset-off));
             throw new HwpParseException();
         }
-        
+        obj.fullfilled = true;
+
         return offset-off;
     }
     

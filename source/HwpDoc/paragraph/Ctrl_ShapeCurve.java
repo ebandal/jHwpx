@@ -77,6 +77,8 @@ public class Ctrl_ShapeCurve extends Ctrl_GeneralShape {
                     segmentType[i] = 1;     break;
                 case "LINE":
                     segmentType[i] = 0;     break;
+                default:
+                    throw new NotImplementedException("Ctrl_ShapeCurve");
                 }
                 points[i] = new Point();
                 numStr = childAttrs.getNamedItem("x1").getNodeValue();
@@ -86,6 +88,8 @@ public class Ctrl_ShapeCurve extends Ctrl_GeneralShape {
                 // childAttrs.getNamedItem("x2").getNodeValue();
                 // childAttrs.getNamedItem("y2").getNodeValue();
                 break;
+            default:
+                throw new NotImplementedException("Ctrl_ShapeCurve");
             }
         }
     }

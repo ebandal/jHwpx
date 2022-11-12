@@ -33,6 +33,7 @@ import HwpDoc.Exception.NotImplementedException;
 
 public abstract class Ctrl {
 	public String ctrlId;
+	public boolean fullfilled;     // 파싱이 완료되었는지를 나타냄
 
 	public Ctrl() {
 	}

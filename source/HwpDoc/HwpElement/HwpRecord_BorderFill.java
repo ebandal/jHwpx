@@ -142,12 +142,10 @@ public class HwpRecord_BorderFill extends HwpRecord {
 
 	}
 	
-	public HwpRecord_BorderFill(HwpDocInfo docInfo, Node node, int version) {
+	public HwpRecord_BorderFill(HwpDocInfo docInfo, Node node, int version) throws NotImplementedException {
         super(HwpTag.HWPTAG_BORDER_FILL, 0, 0);
         this.parent = docInfo;
 
-        dumpNode(node, 1);
-        
         NamedNodeMap attributes = node.getAttributes();
         
         // id는 처리하지 않는다. List<HwpRecord_BorderFill>에 순차적으로 추가한다. 
@@ -182,6 +180,10 @@ public class HwpRecord_BorderFill extends HwpRecord {
             breakCellSeparateLine = true;
             break;
         }
+        
+        // fillBrush가 없는 경우를 위해 default로 fill 생성
+        fill = new Fill();
+        fill.fillType = 0;
         
         NodeList nodeList = node.getChildNodes();
         for (int i=0; i<nodeList.getLength(); i++) {
@@ -258,10 +260,12 @@ public class HwpRecord_BorderFill extends HwpRecord {
                 top = getBorder(child); break;
             case "hh:bottomBorder":
                 bottom = getBorder(child); break;
-            case "hh:digonal":
+            case "hh:diagonal":
                 diagonal = getBorder(child); break;
             case "hc:fillBrush":
                 fill = readFillBrush(child); break;
+            default:
+                throw new NotImplementedException("HwpRecord_BorderFill");
             }
         }
     }
@@ -329,7 +333,7 @@ public class HwpRecord_BorderFill extends HwpRecord {
         return border;
     }
 	
-	public static Fill readFillBrush(Node child) {
+	public static Fill readFillBrush(Node child) throws NotImplementedException {
 	    Fill fill = new Fill();
         NodeList grandChildren = child.getChildNodes();
         for (int j=0; j<grandChildren.getLength(); j++) {
@@ -342,6 +346,8 @@ public class HwpRecord_BorderFill extends HwpRecord {
                 readGradation(grandChild, fill); break;
             case "hc:imgBrush":
                 readImgBrush(grandChild, fill); break;
+            default:
+                throw new NotImplementedException("readFillBrush");
             }
         }
         return fill;

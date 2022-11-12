@@ -113,6 +113,9 @@ public class Ctrl_ShapeOle extends Ctrl_GeneralShape {
                     // childAttrs.getNamedItem("outlineStyle").getNodeValue();                // 테두리선의 형태
                     // childAttrs.getNamedItem("alpha").getNodeValue();                       // 투명도      
                 }
+                break;
+            default:
+                throw new NotImplementedException("ShpaeOLE");
             }
         }
     }

@@ -181,20 +181,78 @@ public class Ctrl_ObjElement extends Ctrl_Common {
                         Node grandChild = childNodeList.item(j);
                         
                         switch(grandChild.getNodeName()) {
-                        case "hp:transMatrix":
+                        case "hc:transMatrix":
                             setMatrix(grandChild, matrix, matrixIdx*6);
                             break;
-                        case "hp:scaMatrix":
+                        case "hc:scaMatrix":
                             setMatrix(grandChild, matrixSeq, matrixIdx*6*2);
                             break;
-                        case "hp:rotMatrix":
+                        case "hc:rotMatrix":
                             setMatrix(grandChild, matrixSeq, matrixIdx*6*2+6);
                             break;
+                        default:
+                            throw new NotImplementedException("Ctrl_ObjElement");
                         }
                     }
                     matrixIdx++;
                 }
                 break;
+            case "hp:lineShape":
+                
+                break;
+            case "hc:fillBrush":
+                
+                break;
+            case "hp:shadow":
+                
+                break;
+            case "hp:drawText":
+                
+                break;
+            case "hc:pt0":
+                
+                break;
+            case "hc:pt1":
+                
+                break;
+            case "hc:pt2":
+                
+                break;
+            case "hc:pt3":
+                
+                break;
+            case "hp:sz":
+                
+                break;
+            case "hp:pos":
+                
+                break;
+            case "hp:outMargin":
+                
+                break;
+            case "hp:imgRect":
+                
+                break;
+            case "hp:imgClip":
+                
+                break;
+            case "hp:inMargin":
+                
+                break;
+            case "hp:imgDim":
+                
+                break;
+            case "hc:img":
+                
+                break;
+            case "hp:effects":
+                
+                break;
+            case "hp:shapeComment":
+                
+                break;
+            default:
+                throw new NotImplementedException("Ctrl_ObjElement");
             }
         }
     }
@@ -202,17 +260,17 @@ public class Ctrl_ObjElement extends Ctrl_Common {
 	private void setMatrix(Node node, double[] matrix, int offset) {
         NamedNodeMap attributes = node.getAttributes();
         String numStr = attributes.getNamedItem("e1").getNodeValue();
-        matrix[offset+0] = (short) Float.parseFloat(numStr);
+        matrix[offset+0] = Double.parseDouble(numStr);
         numStr = attributes.getNamedItem("e2").getNodeValue();
-        matrix[offset+1] = (short) Float.parseFloat(numStr);
+        matrix[offset+1] = Double.parseDouble(numStr);
         numStr = attributes.getNamedItem("e3").getNodeValue();
-        matrix[offset+2] = (short) Float.parseFloat(numStr);
+        matrix[offset+2] = Double.parseDouble(numStr);
         numStr = attributes.getNamedItem("e4").getNodeValue();
-        matrix[offset+3] = (short) Float.parseFloat(numStr);
+        matrix[offset+3] = Double.parseDouble(numStr);
         numStr = attributes.getNamedItem("e5").getNodeValue();
-        matrix[offset+4] = (short) Float.parseFloat(numStr);
+        matrix[offset+4] = Double.parseDouble(numStr);
         numStr = attributes.getNamedItem("e6").getNodeValue();
-        matrix[offset+5] = (short) Float.parseFloat(numStr);
+        matrix[offset+5] = Double.parseDouble(numStr);
 	}
 	
 	public static int parseCtrl(Ctrl_ObjElement obj, int size, byte[] buf, int off, int version) throws HwpParseException {

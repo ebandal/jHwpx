@@ -96,6 +96,8 @@ public class Ctrl_ShapeArc extends Ctrl_GeneralShape {
                 numStr = childAttrs.getNamedItem("y").getNodeValue();
                 axixY2 = Integer.parseInt(numStr);
                 break;
+            default:
+                throw new NotImplementedException("Ctrl_ShapeArc");
             }
         }
 

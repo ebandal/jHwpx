@@ -31,22 +31,29 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import HwpDoc.HwpDocInfo;
 import HwpDoc.Exception.HwpParseException;
+import HwpDoc.Exception.NotImplementedException;
 import soffice.WriterContext.HanType;
 
 public class HwpRecord_BinData extends HwpRecord {
 	private static final Logger log = Logger.getLogger(HwpRecord_BinData.class.getName());
-	private HwpDocInfo  parent;
 
 	public Type	  		type;
 	public Compressed	compressed;
 	public State  		state;
 	
 	public String aPath;		// Type이 "LINK"일때, 연결 파일의 절대 경로
-	public String rPath;		// Type이 "LINK"일때, 연결 파일의 상대 경로
+	// public String rPath;		// Type이 "LINK"일때, 연결 파일의 상대 경로
 	public short  binDataID;	// Type이 "EMBEDDING"이거나 "STORAGE"일때, BINDATASTORAGE에 저장된 바이너리 데이터의 아이디
 	public String format;		// Type이 "EMBEDDING"일때, extension("."제외)
+
+	public String itemId;       // hwpx에서는 itemId가 String
+    
 	
 	HwpRecord_BinData(int tagNum, int level, int size) {
 		super(tagNum, level, size);
@@ -54,11 +61,10 @@ public class HwpRecord_BinData extends HwpRecord {
 	
 	public HwpRecord_BinData(HwpDocInfo docInfo, int tagNum, int level, int size, byte[] buf, int off, int version) throws HwpParseException {
 		this(tagNum, level, size);
-		this.parent = docInfo;
 
 		if (docInfo.hanType == HanType.HWP) {
-    		if (parent.getParentHwp().getBinData()==null) {
-    			parent.getParentHwp().setBinData(parent.getParentHwp().getOleFile().getChildEntries("BinData"));
+    		if (docInfo.getParentHwp().getBinData()==null) {
+    		    docInfo.getParentHwp().setBinData(docInfo.getParentHwp().getOleFile().getChildEntries("BinData"));
     		}
 		}
 		
@@ -81,19 +87,21 @@ public class HwpRecord_BinData extends HwpRecord {
 			pathLen2 = (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF)*2;
 			offset += 2;
 			if (pathLen2 > 0) {
-				rPath = new String(buf, offset, pathLen2, StandardCharsets.UTF_16LE);
+				// rPath = new String(buf, offset, pathLen2, StandardCharsets.UTF_16LE);
 				offset += pathLen2;
-				log.fine("                                                  " + rPath + "(RelativeLink)");
+				// log.fine("                                                  " + rPath + "(RelativeLink)");
 			}
 		}
 		if (type==Type.EMBEDDING || type==Type.STORAGE) {
 			binDataID = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
 			offset += 2;
-			if (parent.getParentHwp().getBinData().size() >= binDataID) {
-				String binFileName = parent.getParentHwp().getBinData().get(binDataID-1).getDirectoryEntryName().trim();
+			if (docInfo.getParentHwp().getBinData().size() >= binDataID) {
+			    aPath = docInfo.getParentHwp().getBinData().get(binDataID-1).getDirectoryEntryName().trim();
 				log.fine("                                                  "
-						+"ID="+binDataID+"("+binFileName+")");
+						+"ID="+binDataID+"("+aPath+")");
+                // String.format("BIN%04X.%s", binDataID, format);
 			}
+			itemId = String.valueOf(binDataID);
 		}
 		if (type==Type.EMBEDDING || type==Type.STORAGE) {
 			int extLen = (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF)*2;
@@ -108,6 +116,33 @@ public class HwpRecord_BinData extends HwpRecord {
 			throw new HwpParseException();
 		}
 	}
+	
+	public HwpRecord_BinData(Node node, int version) throws NotImplementedException {
+        super(HwpTag.HWPTAG_BIN_DATA, 0, 0);
+
+        NamedNodeMap attributes = node.getAttributes();
+        
+        itemId = attributes.getNamedItem("id").getNodeValue();
+        
+        Node tempNode = attributes.getNamedItem("isEmbeded");
+        if (tempNode!=null) {
+            switch(tempNode.getNodeValue()) {
+            case "0":
+                type = type.LINK;
+                aPath = attributes.getNamedItem("sub-path").getNodeValue();
+                break;
+            case "1":
+                type = Type.EMBEDDING;
+                aPath = attributes.getNamedItem("href").getNodeValue();
+                break;
+            }
+        } else {
+            aPath = attributes.getNamedItem("href").getNodeValue();
+        }
+        
+        format = attributes.getNamedItem("media-type").getNodeValue();
+        format = format.replaceAll("image/(jpg)", "$1");
+    }
 	
 	public static enum Type {
 		LINK		(0),

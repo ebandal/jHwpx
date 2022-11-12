@@ -33,6 +33,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import HwpDoc.Exception.NotImplementedException;
 import HwpDoc.HwpElement.HwpRecordTypes.NumberShape2;
 
 public class Ctrl_AutoNumber extends Ctrl {
@@ -53,15 +54,17 @@ public class Ctrl_AutoNumber extends Ctrl {
 		int offset = off;
 
 		int attr 	= buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+		offset += 4;
 		numType 	= NumType.from(attr&0xF);
 		numShape	= NumberShape2.from(attr>>4&0xFF);
 		superscript = (attr>>12&0x1)==0x1?true:false;
 		
 		log.fine("                                                  " + toString());
 		this.size = offset-off;
+		this.fullfilled = true;
 	}
 	
-	public Ctrl_AutoNumber(String ctrlId, Node node, int version) {
+	public Ctrl_AutoNumber(String ctrlId, Node node, int version) throws NotImplementedException {
         super(ctrlId);
         
         NamedNodeMap attributes = node.getAttributes();
@@ -75,8 +78,11 @@ public class Ctrl_AutoNumber extends Ctrl {
             case "autoNumFormat":
                 numShape = NumberShape2.valueOf(child.getNodeValue());
                 break;
+            default:
+                throw new NotImplementedException("Ctrl_AutoNumber");
             }
         }
+        this.fullfilled = true;
     }
 
     public String toString() {

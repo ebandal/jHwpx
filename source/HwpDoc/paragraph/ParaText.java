@@ -1,8 +1,8 @@
 package HwpDoc.paragraph;
 
 public class ParaText extends Ctrl {
-    String  text;
-    int     startIdx;
+    public String  text;
+    public int     startIdx;
 
     public ParaText(String ctrlId, String text, int startIdx) {
         super(ctrlId);

@@ -113,6 +113,8 @@ public class Ctrl_Container extends Ctrl_GeneralShape {
                 ctrl = new Ctrl_ShapeOle("elo$", node, version);
                 list.add(ctrl);
                 break;
+            default:
+                throw new NotImplementedException("Ctrl_Container");
             }
         }
     }

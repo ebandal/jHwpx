@@ -59,6 +59,7 @@ public class Ctrl_Note extends Ctrl {
 		log.fine("                                                  " + toString());
 
 		this.size = offset-off;
+		this.fullfilled = true;
 
 	}
 	
@@ -76,10 +77,23 @@ public class Ctrl_Note extends Ctrl {
             case "subList":
                 {
                     NamedNodeMap childAttrs = child.getAttributes();
-                    throw new NotImplementedException("subList");
+                    
+                    NodeList childNodeList = child.getChildNodes();
+                    for (int j=0; j<childNodeList.getLength(); j++) {
+                        Node grandChild = childNodeList.item(j);
+                        switch(grandChild.getNodeName()) {
+                        case "p":
+                            HwpParagraph cellP = new HwpParagraph(grandChild, version);
+                            paras.add(cellP);
+                            break;
+                        default:
+                            throw new NotImplementedException("Ctrl_Note");
+                        }
+                    }
                 }
             }
         }
+        this.fullfilled = true;
     }
 
 
