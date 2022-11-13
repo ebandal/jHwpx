@@ -127,7 +127,7 @@ public class Ctrl_GeneralShape extends Ctrl_ObjElement {
                     */       
                 }
                 break;
-            case "hp:fillBrush":    // 그리기 객체의 채우기 정보
+            case "hc:fillBrush":    // 그리기 객체의 채우기 정보
                 fill = HwpRecord_BorderFill.readFillBrush(child);
                 break;
             case "hp:drawText":     // 그리기 객체 글상자용 텍스트   178 page
@@ -191,9 +191,6 @@ public class Ctrl_GeneralShape extends Ctrl_ObjElement {
             case "hp:renderingInfo":
                 
                 break;
-            case "hc:fillBrush":
-                
-                break;
             case "hc:pt0":
                 
                 break;
@@ -251,24 +248,24 @@ public class Ctrl_GeneralShape extends Ctrl_ObjElement {
         int nodeLength = nodeList.getLength();
         for (int i=0; i<nodeLength; i++) {
             Node child = nodeList.item(i);
-            Ctrl lastCtrl = null;
+            Ctrl latestCtrl = null;
             switch(child.getNodeName()) {
             case "hp:p":
                 HwpParagraph p = new HwpParagraph(child, version);
                 paras.add(p);
-                lastCtrl = (p.p==null ? null : p.p.getLast());
+                latestCtrl = (p.p==null ? null : p.p.getLast());
                 break;
             }
         
             // ParaBreak를 subList 중간에 하나씩 강제로 넣는다. Paragraph 단위로 다음줄에 써지도록
-            if (lastCtrl != null && lastCtrl instanceof ParaText) {
+            if (latestCtrl != null && latestCtrl instanceof ParaText && i<nodeLength-1) {
                 HwpParagraph breakP = new HwpParagraph(child, version);
                 if (breakP.p != null) {
                     breakP.p.clear();
                 } else {
                     breakP.p = new LinkedList<Ctrl>();
                 }
-                breakP.p.add(new Ctrl_Character("  _", CtrlCharType.PARAGRAPH_BREAK));
+                breakP.p.add(new Ctrl_Character("   _", CtrlCharType.PARAGRAPH_BREAK));
                 paras.add(breakP);
             }
         }
@@ -391,7 +388,7 @@ public class Ctrl_GeneralShape extends Ctrl_ObjElement {
         int len = Ctrl_ObjElement.parseCtrl((Ctrl_ObjElement)obj, size, buf, offset, version);
         offset += len;
 
-        obj.lineColor   = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        obj.lineColor   = buf[offset+3]<<24&0xFF000000 | buf[offset]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset+2]&0x000000FF;
         offset += 4;
         obj.lineThick   = (short) (buf[offset+1]<<8&0xFF00 | buf[offset]&0x00FF);
         offset += 2;

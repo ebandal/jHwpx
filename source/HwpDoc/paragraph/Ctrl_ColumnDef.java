@@ -89,7 +89,7 @@ public class Ctrl_ColumnDef extends Ctrl {
 		// 단 구분선 굵기(테두리/배경이 테두리 선 굵기 참조)
 		colLineWidth		= buf[offset++];
 		// 단 구분선 굵기(테두리/배경이 테두리 선 굵기 참조)
-		colLineColor		= buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        colLineColor        = buf[offset+3]<<24&0xFF000000 | buf[offset]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset+2]&0x000000FF;
 		offset += 4;
 		attr 				= attrHighBits<<16 | attrLowBits;
 		

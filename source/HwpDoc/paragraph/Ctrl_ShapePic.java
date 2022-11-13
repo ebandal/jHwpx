@@ -291,7 +291,7 @@ public class Ctrl_ShapePic extends Ctrl_GeneralShape {
 	public static int parseElement(Ctrl_ShapePic obj, int size, byte[] buf, int off, int version, HwpFile hwp) throws HwpParseException, NotImplementedException {
         int offset = off;
         
-        obj.borderColor     = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        obj.borderColor     = buf[offset+3]<<24&0xFF000000 | buf[offset]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset+2]&0x000000FF;
         offset += 4;
         obj.borderThick     = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
         offset += 4;

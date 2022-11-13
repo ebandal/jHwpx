@@ -82,7 +82,7 @@ public class HwpRecord_ParaText extends HwpRecord {
                 int startIndex = prevIndex;
                 
                 String content = text.substring(startIndex, m.start());
-                paras.add(new ParaText("___", content, startIndex));
+                paras.add(new ParaText("____", content, startIndex));
             }
             
             if (m.start()+1==m.end()) {
@@ -91,17 +91,17 @@ public class HwpRecord_ParaText extends HwpRecord {
                 
                 switch(controlByte) {
                 case 0x0a:      // 10 한 줄 끝 (line break);
-                    paras.add(new Ctrl_Character("  _", CtrlCharType.LINE_BREAK));
+                    paras.add(new Ctrl_Character("   _", CtrlCharType.LINE_BREAK));
                     break;
                 case 0x0d:      // 13 문단 끝 (para break)
-                    paras.add(new Ctrl_Character("  _", CtrlCharType.PARAGRAPH_BREAK));
+                    paras.add(new Ctrl_Character("   _", CtrlCharType.PARAGRAPH_BREAK));
                     break;
                 case 0x18:      // 24 하이픈
-                    paras.add(new Ctrl_Character("  _", CtrlCharType.HARD_HYPHEN));
+                    paras.add(new Ctrl_Character("   _", CtrlCharType.HARD_HYPHEN));
                     break;
                 case 0x1e:      // 30 묶음 빈칸
                 case 0x1f:      // 31 고정폭 빈칸
-                    paras.add(new Ctrl_Character("  _", CtrlCharType.HARD_SPACE));
+                    paras.add(new Ctrl_Character("   _", CtrlCharType.HARD_SPACE));
                     break;
                 }
                 
@@ -116,7 +116,7 @@ public class HwpRecord_ParaText extends HwpRecord {
                 case 0x08:  // title mark
                     break;
                 case 0x09:  // 탭
-                    paras.add(new ParaText("___", "\t", 0));
+                    paras.add(new ParaText("____", "\t", 0));
                     break;
                 case 0x10:  // 머리말/꼬리말
                     paras.add(new Ctrl_HeadFoot(info));

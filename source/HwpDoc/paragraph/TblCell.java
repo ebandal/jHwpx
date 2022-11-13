@@ -165,7 +165,8 @@ public class TblCell {
                         paras = new ArrayList<CellParagraph>();
                     }
                     NodeList childNodeList = child.getChildNodes();
-                    for (int j=0; j<childNodeList.getLength(); j++) {
+                    int nodeListNum = childNodeList.getLength();
+                    for (int j=0; j<nodeListNum; j++) {
                         Node grandChild = childNodeList.item(j);
                         Ctrl lastCtrl = null;
                         switch(grandChild.getNodeName()) {
@@ -180,14 +181,14 @@ public class TblCell {
                         }
                         
                         // ParaBreak를 subList 중간에 하나씩 강제로 넣는다. Paragraph 단위로 다음줄에 써지도록
-                        if (lastCtrl != null && lastCtrl instanceof ParaText) {
+                        if (lastCtrl!=null && lastCtrl instanceof ParaText && j<nodeListNum-1) {
                             CellParagraph breakP = new CellParagraph(grandChild, version);
                             if (breakP.p!=null) {
                                 breakP.p.clear();
                             } else {
                                 breakP.p = new LinkedList<Ctrl>();
                             }
-                            breakP.p.add(new Ctrl_Character("  _", CtrlCharType.PARAGRAPH_BREAK));
+                            breakP.p.add(new Ctrl_Character("   _", CtrlCharType.PARAGRAPH_BREAK));
                             paras.add(breakP);
                         }
                     }

@@ -123,6 +123,10 @@ public class HwpParagraph {
             }
         }
         
+        // 마지막에 PARA_BREAK로 끝나지 않았다면 PARA_BREAK를 삽입
+        if (p!=null && !(p.getLast() instanceof Ctrl_Character)) {
+            p.add(new Ctrl_Character("   _", CtrlCharType.PARAGRAPH_BREAK));
+        }
 	}
 	
 	private void parseHwpParagraph(Node node, int version) throws NotImplementedException {
@@ -166,29 +170,25 @@ public class HwpParagraph {
                 }
                 
                 NodeList nodeList = node.getChildNodes();
-                if (nodeList.getLength() == 0) {
-                    p.add(new Ctrl_Character("  _", CtrlCharType.HARD_SPACE));
-                } else {
-                    for (int j=0; j<nodeList.getLength(); j++) {
-                        Node child = nodeList.item(j);
-                        switch(child.getNodeName()) {
-                        case "#text":
-                            p.add(new ParaText("___", child.getNodeValue(), 0));
-                            break;
-                        case "markpenBegin":    // 134 page
-                        case "markpenEnd":
-                        case "titleMark":
-                        case "tab":
-                        case "lineBreak":
-                        case "hyphen":
-                        case "nbSpace":
-                        case "fwSpace":
-                        case "insertBegin":
-                        case "insertEnd":
-                        case "deleteBegin":
-                        case "deleteEnd":
-                            throw new NotImplementedException("hp:t");
-                        }
+                for (int j=0; j<nodeList.getLength(); j++) {
+                    Node child = nodeList.item(j);
+                    switch(child.getNodeName()) {
+                    case "#text":
+                        p.add(new ParaText("____", child.getNodeValue(), 0));
+                        break;
+                    case "markpenBegin":    // 134 page
+                    case "markpenEnd":
+                    case "titleMark":
+                    case "tab":
+                    case "lineBreak":
+                    case "hyphen":
+                    case "nbSpace":
+                    case "fwSpace":
+                    case "insertBegin":
+                    case "insertEnd":
+                    case "deleteBegin":
+                    case "deleteEnd":
+                        throw new NotImplementedException("hp:t");
                     }
                 }
             }

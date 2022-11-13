@@ -95,7 +95,7 @@ public class NoteShape {
         offset += 2;
         noteShape.noteLineType          = LineType1.from(buf[offset++]);
         noteShape.noteLineWidth         = buf[offset++];
-        noteShape.noteLineColor         = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        noteShape.noteLineColor         = buf[offset+3]<<24&0xFF000000 | buf[offset]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset+2]&0x000000FF;
         offset += 4;          
         
         log.fine("                                                  "

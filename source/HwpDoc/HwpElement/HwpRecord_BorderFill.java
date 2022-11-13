@@ -90,23 +90,23 @@ public class HwpRecord_BorderFill extends HwpRecord {
 		// 실제 hwp 문서를 파싱하면서 판단하기에  1byte,1byte,4byte 4회 반복이 맞는 것 같다고 보임. 
 		left.type		= LineType2.from(buf[offset++]);
 		left.width 		= buf[offset++];
-		left.color 		= buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        left.color      = buf[offset+3]<<24&0xFF000000 | buf[offset]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset+2]&0x000000FF;    // 0x00rrggbb
 		offset += 4;
 		right.type		= LineType2.from(buf[offset++]);
 		right.width 	= buf[offset++];
-		right.color 	= buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        right.color     = buf[offset+3]<<24&0xFF000000 | buf[offset]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset+2]&0x000000FF;
 		offset += 4;
 		top.type		= LineType2.from(buf[offset++]);
 		top.width 		= buf[offset++];
-		top.color 		= buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        top.color       = buf[offset+3]<<24&0xFF000000 | buf[offset]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset+2]&0x000000FF;
 		offset += 4;
 		bottom.type		= LineType2.from(buf[offset++]);
 		bottom.width 	= buf[offset++];
-		bottom.color 	= buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        bottom.color    = buf[offset+3]<<24&0xFF000000 | buf[offset]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset+2]&0x000000FF;
 		offset += 4;
 		diagonal.type		= LineType2.from(buf[offset++]);
 		diagonal.width 	= buf[offset++];
-		diagonal.color 	= buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+        diagonal.color  = buf[offset+3]<<24&0xFF000000 | buf[offset]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset+2]&0x000000FF;
 		offset += 4;
 		
 		fill = new Fill(buf, offset, size-(offset-off));
@@ -341,11 +341,17 @@ public class HwpRecord_BorderFill extends HwpRecord {
 
             switch(grandChild.getNodeName()) {
             case "hc:winBrush":
-                readWinBrush(grandChild, fill); break;
+                readWinBrush(grandChild, fill);
+                fill.fillType = fill.fillType | 0x01;
+                break;
             case "hc:gradation":
-                readGradation(grandChild, fill); break;
+                readGradation(grandChild, fill); 
+                fill.fillType = fill.fillType | 0x04;
+                break;
             case "hc:imgBrush":
-                readImgBrush(grandChild, fill); break;
+                readImgBrush(grandChild, fill);
+                fill.fillType = fill.fillType | 0x02;
+                break;
             default:
                 throw new NotImplementedException("readFillBrush");
             }
@@ -355,7 +361,7 @@ public class HwpRecord_BorderFill extends HwpRecord {
 
 	private static void readWinBrush(Node child, Fill fill) {
         NamedNodeMap childAttrs = child.getAttributes();
-        fill.faceColor = 0xFFFFFF;
+        fill.faceColor = 0xFFFFFFFF;
         String colorStr = childAttrs.getNamedItem("faceColor").getNodeValue();
         if (!colorStr.equals("none")) {
             colorStr = colorStr.replaceAll("#", "");
@@ -522,9 +528,9 @@ public class HwpRecord_BorderFill extends HwpRecord {
 			offset += 4;
 
 			if ((fillType&0x01)==0x01) {
-				faceColor 		= buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+                faceColor       = buf[offset+3]<<24&0xFF000000 | buf[offset]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset+2]&0x000000FF;
 				offset += 4;
-				hatchColor 		= buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+                hatchColor      = buf[offset+3]<<24&0xFF000000 | buf[offset]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset+2]&0x000000FF;
 				offset += 4;
 				int nPattern 	= buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
 				offset += 4;
@@ -552,7 +558,7 @@ public class HwpRecord_BorderFill extends HwpRecord {
 	                }
 				}
 				for (int i=0; i<colorNum; i++) {
-				    colors[i]    = buf[offset+3]<<24&0xFF000000 | buf[offset+2]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset]&0x000000FF;
+                    colors[i]    = buf[offset+3]<<24&0xFF000000 | buf[offset]<<16&0x00FF0000 | buf[offset+1]<<8&0x0000FF00 | buf[offset+2]&0x000000FF;
 				    offset += 4;
 				}
 			}
